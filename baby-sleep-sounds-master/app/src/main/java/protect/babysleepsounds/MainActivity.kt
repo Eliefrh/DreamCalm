@@ -79,7 +79,7 @@ class MainActivity : AppCompatActivity() {
             .put(resources.getString(R.string.time_8hour), 1000 * 60 * 60 * 8)
             .build()
         val soundSpinner = findViewById<Spinner>(R.id.soundSpinner)
-        val names: List<String> = ArrayList(_soundMap.keys)
+        val names: List<String> = _soundMap?.keys?.toList() ?: emptyList()
         val dataAdapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item, names
@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         soundSpinner.adapter = dataAdapter
         val sleepTimeoutSpinner = findViewById<Spinner>(R.id.sleepTimerSpinner)
-        val times: List<String> = ArrayList(_timeMap.keys)
+        val times: List<String> = _timeMap?.keys?.toList() ?: emptyList()
         sleepTimeoutSpinner.onItemSelectedListener = object : OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,
@@ -122,7 +122,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         _ffmpeg = FFmpeg.getInstance(this)
-        if (_ffmpeg.isSupported()) {
+        if (_ffmpeg is FFmpeg && _ffmpeg!!.isSupported()) {
             button.isEnabled = true
         } else {
             Log.d(TAG, "ffmpeg not supported")
