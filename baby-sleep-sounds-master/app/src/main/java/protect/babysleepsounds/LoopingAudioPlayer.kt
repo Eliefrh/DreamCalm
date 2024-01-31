@@ -15,9 +15,7 @@ class LoopingAudioPlayer(context: Context, private val _wavFile: File) {
     private var _wakeLock: WakeLock? = null
     fun start() {
         if (_playbackThread != null) {
-            if (_wakeLock != null) {
-                _wakeLock.acquire()
-            }
+            _wakeLock?.acquire()
             _playbackThread!!.start()
         } else {
             Log.w(TAG, "Audio playback already stopped, cannot start again")
@@ -29,9 +27,7 @@ class LoopingAudioPlayer(context: Context, private val _wavFile: File) {
         if (_playbackThread != null) {
             _playbackThread!!.interrupt()
             _playbackThread = null
-            if (_wakeLock != null) {
-                _wakeLock.release()
-            }
+            _wakeLock?.release()
         }
     }
 
