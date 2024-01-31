@@ -40,7 +40,7 @@ class SettingsActivity : AppCompatActivity() {
             theme = findPreference("theme")
             theme!!.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { preference, newValue ->
-                    Preferences.get(activity).applyTheme(newValue as String)
+                    activity?.let { Preferences[it]?.applyTheme(newValue as String) }
                     true
                 }
             toggleCutoff(filterEnabled.isChecked)
