@@ -10,7 +10,7 @@ android {
     defaultConfig {
         applicationId "protect.babysleepsounds"
         minSdkVersion 19
-        targetSdkVersion 34
+        targetSdkVersion 33
         versionCode 15
         versionName "0.11"
     }
