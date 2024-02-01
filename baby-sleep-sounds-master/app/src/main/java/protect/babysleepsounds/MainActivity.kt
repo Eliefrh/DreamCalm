@@ -149,7 +149,7 @@ class MainActivity : AppCompatActivity() {
             val processed = File(filesDir, PROCESSED_RAW_FILE)
             if (processed.exists()) {
                 val result = processed.delete()
-                if (result == false) {
+                if (!result) {
                     throw IOException("Unable to delete previous file, cannot prepare new file")
                 }
             }
@@ -163,6 +163,7 @@ class MainActivity : AppCompatActivity() {
                 arguments.add("-af")
                 arguments.add("lowpass=frequency=$frequencyValue")
             }
+
             arguments.add("-f")
             arguments.add("s16le")
             arguments.add("-acodec")

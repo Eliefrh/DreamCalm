@@ -1,6 +1,7 @@
 package protect.babysleepsounds
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.preference.ListPreference
@@ -29,12 +30,14 @@ class SettingsActivity : AppCompatActivity() {
             filterCutoff!!.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { preference, newValue ->
                     updateCutoffSummary(newValue as Int)
+                    Preferences[activity]?.setLowPassFilterFrequency(newValue)
                     true
                 }
             val filterEnabled = findPreference<SwitchPreferenceCompat>("filter_enabled")
             filterEnabled!!.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { preference, newValue ->
                     toggleCutoff(newValue as Boolean)
+
                     true
                 }
             theme = findPreference("theme")

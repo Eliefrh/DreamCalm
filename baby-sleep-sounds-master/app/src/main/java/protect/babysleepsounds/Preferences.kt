@@ -30,6 +30,11 @@ class Preferences private constructor(context: Context?) {
         AppCompatDelegate.setDefaultNightMode(dayNightMode)
     }
 
+    fun setLowPassFilterFrequency(value: Int) {
+        preferences.edit().putInt(LOW_PASS_FILTER_FREQUENCY, value).apply()
+    }
+
+
     companion object {
         private const val LOW_PASS_FILTER_ENABLED = "filter_enabled"
         private const val LOW_PASS_FILTER_FREQUENCY = "filter_value"
