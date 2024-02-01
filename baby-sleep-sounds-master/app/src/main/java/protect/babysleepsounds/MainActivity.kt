@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity() {
         sleepTimeoutSpinner.onItemSelectedListener = object : OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,
-                view: View,
+                view: View?,
                 position: Int,
                 id: Long
             ) {
