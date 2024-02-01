@@ -23,7 +23,7 @@ class SettingsActivity : AppCompatActivity() {
     class Fragment : PreferenceFragmentCompat() {
         private var filterCutoff: SeekBarPreference? = null
         private var theme: ListPreference? = null
-        override fun onCreatePreferences(savedInstanceState: Bundle, rootKey: String) {
+        override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             addPreferencesFromResource(R.xml.preferences)
             filterCutoff = findPreference("filter_cutoff")
             filterCutoff!!.onPreferenceChangeListener =
@@ -40,7 +40,7 @@ class SettingsActivity : AppCompatActivity() {
             theme = findPreference("theme")
             theme!!.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { preference, newValue ->
-                    activity?.let { Preferences[it]?.applyTheme(newValue as String) }
+                    Preferences.Companion.get(activity)!!.applyTheme(newValue as String)
                     true
                 }
             toggleCutoff(filterEnabled.isChecked)

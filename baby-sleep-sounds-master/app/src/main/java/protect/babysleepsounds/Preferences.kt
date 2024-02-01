@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import android.preference.PreferenceManager
 import androidx.appcompat.app.AppCompatDelegate
 
-class Preferences private constructor(context: Context) {
+class Preferences private constructor(context: Context?) {
     private val preferences: SharedPreferences
 
     init {
@@ -37,8 +37,7 @@ class Preferences private constructor(context: Context) {
         const val THEME_LIGHT = "light"
         const val THEME_DARK = "dark"
         private var instance: Preferences? = null
-        @JvmStatic
-        operator fun get(context: Context): Preferences? {
+        operator fun get(context: Context?): Preferences? {
             if (instance == null) {
                 instance = Preferences(context)
             }

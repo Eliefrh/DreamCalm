@@ -11,7 +11,6 @@ import android.os.IBinder
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
-import protect.babysleepsounds.MainActivity
 import java.io.File
 
 class AudioService : Service() {
@@ -60,7 +59,7 @@ class AudioService : Service() {
         val resultIntent = Intent(this, MainActivity::class.java)
         val resultPendingIntent = PendingIntent.getActivity(
             this, 0,
-            resultIntent, 0
+            resultIntent, PendingIntent.FLAG_IMMUTABLE
         )
         builder.setContentIntent(resultPendingIntent)
         startForeground(NOTIFICATION_ID, builder.build())
