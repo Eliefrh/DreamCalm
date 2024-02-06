@@ -1,7 +1,12 @@
 package protect.babysleepsounds
 
+import android.app.Activity
+import android.app.Instrumentation
 import android.app.ProgressDialog
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.os.Bundle
@@ -16,6 +21,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -38,6 +44,29 @@ class MainActivity : AppCompatActivity() {
     private var _timer: Timer? = null
     private var _ffmpeg: FFmpeg? = null
     private var _encodingProgress: ProgressDialog? = null
+
+    //pour recevoir message d une activity ouvert avec intent ne marche pas vu qu activity va etre fini
+    /**private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            var intent = result.data ?: Intent()
+            if (intent.hasExtra("appliquer")) {
+                Log.d("soso","marche")
+            }
+        }
+    }**/
+
+    private val stopMusicReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            stopPlayback()
+            startPlayback()
+        }
+    }
+
+    override fun onStart() {
+        val intentFilter = IntentFilter("STOP_MUSIC_ACTION")
+        registerReceiver(stopMusicReceiver, intentFilter)
+        super.onStart()
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         Preferences[this]!!.applyTheme()
         super.onCreate(savedInstanceState)
@@ -428,9 +457,12 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+
+
     companion object {
         private const val TAG = "BabySleepSounds"
         private const val ORIGINAL_MP3_FILE = "original.mp3"
         private const val PROCESSED_RAW_FILE = "processed.raw"
+
     }
 }
