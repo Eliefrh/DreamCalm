@@ -40,7 +40,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'com.google.guava:guava:30.1-jre'
-    implementation 'protect:android-ffmpeg:release@aar'
+    implementation 'protect:android-ffmpeg:6.1.1@aar'
     implementation 'androidx.core:core-ktx:+'
 }
 
