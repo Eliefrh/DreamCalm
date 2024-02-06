@@ -13,6 +13,8 @@ android {
         targetSdkVersion 33
         versionCode 15
         versionName "0.11"
+        multiDexEnabled true
+
     }
     buildTypes {
         release {
@@ -20,7 +22,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -28,8 +30,18 @@ android {
         disable "GoogleAppIndexingWarning"
         disable "MissingTranslation"
     }
-}
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
 
+    namespace 'protect.babysleepsounds'
+}
+kotlin {
+    jvmToolchain {
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+}
 repositories {
     mavenCentral()
 }
@@ -41,7 +53,8 @@ dependencies {
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'com.google.guava:guava:30.1-jre'
     implementation 'protect:android-ffmpeg:release@aar'
-    implementation 'androidx.core:core-ktx:+'
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.multidex:multidex:2.0.1'
 
 }
 
