@@ -57,8 +57,10 @@ class MainActivity : AppCompatActivity() {
 
     private val stopMusicReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+            if (_playing) {
             stopPlayback()
             startPlayback()
+        }
         }
     }
 
