@@ -19,6 +19,7 @@ import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -37,8 +38,10 @@ import java.util.LinkedList
 import java.util.Timer
 import java.util.TimerTask
 
+data class SoundItem(val imageResId: Int)
+
 class MainActivity : AppCompatActivity() {
-    private var _soundMap: Map<String, Int>? = null
+    private var _soundMap: Map<Int, Int>? = null
     private var _timeMap: Map<String, Int>? = null
     private var _playing = false
     private var _timer: Timer? = null
@@ -82,21 +85,21 @@ class MainActivity : AppCompatActivity() {
         // - Cut the first 3 seconds, and place it over the last three seconds
         //   which should create a seamless track appropriate for looping
         // - Save as a mp3 file, 128kbps, stereo
-        _soundMap = ImmutableMap.builder<String, Int>()
-            .put(resources.getString(R.string.campfire), R.raw.campfire)
-            .put(resources.getString(R.string.dryer), R.raw.dryer)
-            .put(resources.getString(R.string.fan), R.raw.fan)
-            .put(resources.getString(R.string.ocean), R.raw.ocean)
-            .put(resources.getString(R.string.rain), R.raw.rain)
-            .put(resources.getString(R.string.refrigerator), R.raw.refrigerator)
-            .put(resources.getString(R.string.shhhh), R.raw.shhhh)
-            .put(resources.getString(R.string.shower), R.raw.shower)
-            .put(resources.getString(R.string.stream), R.raw.stream)
-            .put(resources.getString(R.string.vacuum), R.raw.vacuum)
-            .put(resources.getString(R.string.water), R.raw.water)
-            .put(resources.getString(R.string.waterfall), R.raw.waterfall)
-            .put(resources.getString(R.string.waves), R.raw.waves)
-            .put(resources.getString(R.string.whiteNoise), R.raw.white_noise)
+        _soundMap = ImmutableMap.builder<Int, Int>()
+            .put(R.mipmap.campfire_foreground, R.raw.campfire)
+            .put(R.mipmap.dryer_foreground, R.raw.dryer)
+            .put(R.mipmap.fan_foreground, R.raw.fan)
+            .put(R.mipmap.ocean_foreground, R.raw.ocean)
+            .put(R.mipmap.rain_foreground, R.raw.rain)
+            .put(R.mipmap.refrigerator_foreground, R.raw.refrigerator)
+            .put(R.mipmap.shhh_foreground, R.raw.shhhh)
+            .put(R.mipmap.shower_foreground, R.raw.shower)
+            .put(R.mipmap.stream_foreground, R.raw.stream)
+            .put(R.mipmap.vacuum_foreground, R.raw.vacuum)
+            .put(R.mipmap.water_foreground, R.raw.water)
+            .put(R.mipmap.waterfall_foreground, R.raw.waterfall)
+            .put(R.mipmap.waves_foreground, R.raw.waves)
+            .put(R.mipmap.white_noise_foreground, R.raw.white_noise)
             .build()
         _timeMap = ImmutableMap.builder<String, Int>()
             .put(resources.getString(R.string.disabled), 0)
@@ -109,14 +112,21 @@ class MainActivity : AppCompatActivity() {
             .put(resources.getString(R.string.time_4hour), 1000 * 60 * 60 * 4)
             .put(resources.getString(R.string.time_8hour), 1000 * 60 * 60 * 8)
             .build()
+
         val soundSpinner = findViewById<Spinner>(R.id.soundSpinner)
-        val names: List<String> = _soundMap?.keys?.toList() ?: emptyList()
-        val dataAdapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item, names
-        )
-        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        soundSpinner.adapter = dataAdapter
+        val soundItems = _soundMap?.keys?.map { SoundItem(it) } ?: emptyList()
+        val adapter = SoundAdapter(this, soundItems)
+        soundSpinner.adapter = adapter
+
+
+//        val soundSpinner = findViewById<Spinner>(R.id.soundSpinner)
+//        val names: List<Int> = _soundMap?.keys?.toList() ?: emptyList()
+//        val dataAdapter = ArrayAdapter(
+//            this,
+//            android.R.layout.simple_spinner_item, names
+//        )
+//        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+//        soundSpinner.adapter = dataAdapter
         val sleepTimeoutSpinner = findViewById<Spinner>(R.id.sleepTimerSpinner)
         val times: List<String> = _timeMap?.keys?.toList() ?: emptyList()
         sleepTimeoutSpinner.onItemSelectedListener = object : OnItemSelectedListener {
@@ -170,7 +180,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun startPlayback() {
         val soundSpinner = findViewById<Spinner>(R.id.soundSpinner)
-        val selectedSound = soundSpinner.selectedItem as String
+        val selectedSoundItem = soundSpinner.selectedItem as SoundItem
+        val selectedSound = selectedSoundItem.imageResId
         val id = _soundMap!![selectedSound]!!
         volumeControlStream = AudioManager.STREAM_MUSIC
         try {
