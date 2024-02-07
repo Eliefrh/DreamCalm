@@ -14,12 +14,14 @@ import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.GridView
 import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.get
 import com.google.common.collect.ImmutableMap
 import nl.bravobit.ffmpeg.ExecuteBinaryResponseHandler
 import nl.bravobit.ffmpeg.FFmpeg
@@ -41,6 +43,7 @@ class MainActivity : AppCompatActivity() {
     private var _timer: Timer? = null
     private var _ffmpeg: FFmpeg? = null
     private var _encodingProgress: ProgressDialog? = null
+    private var selectedPosition: Int = -1
     override fun onCreate(savedInstanceState: Bundle?) {
         Preferences[this]!!.applyTheme()
         super.onCreate(savedInstanceState)
@@ -82,20 +85,18 @@ class MainActivity : AppCompatActivity() {
             .put(resources.getString(R.string.time_8hour), 1000 * 60 * 60 * 8)
             .build()
 
-        val soundSpinner = findViewById<Spinner>(R.id.soundSpinner)
+        val gridView = findViewById<GridView>(R.id.gridView)
         val soundItems = _soundMap?.keys?.map { SoundItem(it) } ?: emptyList()
         val adapter = SoundAdapter(this, soundItems)
-        soundSpinner.adapter = adapter
+        gridView.adapter = adapter
+        var playingMusicImg= findViewById<ImageView>(R.id.playingSound)
 
+        gridView.setOnItemClickListener { parent, view, position, id ->
+            // Store the selected position in a variable
+            selectedPosition = position
+            playingMusicImg.setImageResource(soundItems[position].imageResId)
+        }
 
-//        val soundSpinner = findViewById<Spinner>(R.id.soundSpinner)
-//        val names: List<Int> = _soundMap?.keys?.toList() ?: emptyList()
-//        val dataAdapter = ArrayAdapter(
-//            this,
-//            android.R.layout.simple_spinner_item, names
-//        )
-//        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-//        soundSpinner.adapter = dataAdapter
         val sleepTimeoutSpinner = findViewById<Spinner>(R.id.sleepTimerSpinner)
         val times: List<String> = _timeMap?.keys?.toList() ?: emptyList()
         sleepTimeoutSpinner.onItemSelectedListener = object : OnItemSelectedListener {
@@ -126,7 +127,7 @@ class MainActivity : AppCompatActivity() {
         val button = findViewById<Button>(R.id.button)
         button.setOnClickListener {
             if (_playing == false) {
-                startPlayback()
+                startPlayback(soundItems)
             } else {
                 stopPlayback()
             }
@@ -147,76 +148,88 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, R.string.playbackNotSupported, Toast.LENGTH_LONG).show()
     }
 
-    private fun startPlayback() {
-        val soundSpinner = findViewById<Spinner>(R.id.soundSpinner)
-        val selectedSoundItem = soundSpinner.selectedItem as SoundItem
-        val selectedSound = selectedSoundItem.imageResId
-        val id = _soundMap!![selectedSound]!!
-        volumeControlStream = AudioManager.STREAM_MUSIC
-        try {
-            val originalFile = File(filesDir, ORIGINAL_MP3_FILE)
-            Log.i(TAG, "Writing file out prior to WAV conversion")
-            writeToFile(id, originalFile)
-            val processed = File(filesDir, PROCESSED_RAW_FILE)
-            if (processed.exists()) {
-                val result = processed.delete()
-                if (!result) {
-                    throw IOException("Unable to delete previous file, cannot prepare new file")
+    private fun startPlayback(soundItems: List<SoundItem>) {
+
+        val selectedPosition = this.selectedPosition
+        //check if its a valid selection
+        if (selectedPosition != -1 && selectedPosition < soundItems.size) {
+            val selectedSoundItem = soundItems[selectedPosition]
+            val selectedSound = selectedSoundItem.imageResId
+            Log.d("Elie", selectedSound.toString())
+            val id = _soundMap!![selectedSound]!!
+            volumeControlStream = AudioManager.STREAM_MUSIC
+            try {
+                val originalFile = File(filesDir, ORIGINAL_MP3_FILE)
+                Log.i(TAG, "Writing file out prior to WAV conversion")
+                writeToFile(id, originalFile)
+                val processed = File(filesDir, PROCESSED_RAW_FILE)
+                if (processed.exists()) {
+                    val result = processed.delete()
+                    if (!result) {
+                        throw IOException("Unable to delete previous file, cannot prepare new file")
+                    }
                 }
+                Log.i(TAG, "Converting file to WAV")
+                val arguments = LinkedList<String>()
+                arguments.add("-i")
+                arguments.add(originalFile.absolutePath)
+                if (Preferences[this]!!.isLowPassFilterEnabled) {
+                    val frequencyValue = Preferences[this]!!.lowPassFilterFrequency
+                    Log.i(TAG, "Will perform lowpass filter to $frequencyValue Hz")
+                    arguments.add("-af")
+                    arguments.add("lowpass=frequency=$frequencyValue")
+                }
+
+                arguments.add("-f")
+                arguments.add("s16le")
+                arguments.add("-acodec")
+                arguments.add("pcm_s16le")
+                arguments.add(processed.absolutePath)
+                _encodingProgress = ProgressDialog(this)
+                _encodingProgress!!.setMessage(getString(R.string.preparing))
+                _encodingProgress!!.show()
+                Log.i(TAG, "Launching ffmpeg")
+                val cmd = arguments.toTypedArray()
+                _ffmpeg!!.execute(cmd, object : ExecuteBinaryResponseHandler() {
+                    override fun onStart() {
+                        Log.d(TAG, "ffmpeg execute onStart()")
+                    }
+
+                    override fun onSuccess(message: String) {
+                        Log.d(TAG, "ffmpeg execute onSuccess(): $message")
+                        val startIntent = Intent(this@MainActivity, AudioService::class.java)
+                        startIntent.putExtra(
+                            AudioService.AUDIO_FILENAME_ARG,
+                            processed.absolutePath
+                        )
+                        startService(startIntent)
+                        updateToPlaying()
+                    }
+
+                    override fun onProgress(message: String) {
+                        Log.d(TAG, "ffmpeg execute onProgress(): $message")
+                    }
+
+                    override fun onFailure(message: String) {
+                        Log.d(TAG, "ffmpeg execute onFailure(): $message")
+                        reportPlaybackFailure()
+                    }
+
+                    override fun onFinish() {
+                        Log.d(TAG, "ffmpeg execute onFinish()")
+                    }
+                })
+            } catch (e: IOException) {
+                Log.i(TAG, "Failed to start playback", e)
+                reportPlaybackFailure()
+            } catch (e: FFmpegCommandAlreadyRunningException) {
+                Log.i(TAG, "Failed to start playback", e)
+                reportPlaybackFailure()
             }
-            Log.i(TAG, "Converting file to WAV")
-            val arguments = LinkedList<String>()
-            arguments.add("-i")
-            arguments.add(originalFile.absolutePath)
-            if (Preferences[this]!!.isLowPassFilterEnabled) {
-                val frequencyValue = Preferences[this]!!.lowPassFilterFrequency
-                Log.i(TAG, "Will perform lowpass filter to $frequencyValue Hz")
-                arguments.add("-af")
-                arguments.add("lowpass=frequency=$frequencyValue")
-            }
 
-            arguments.add("-f")
-            arguments.add("s16le")
-            arguments.add("-acodec")
-            arguments.add("pcm_s16le")
-            arguments.add(processed.absolutePath)
-            _encodingProgress = ProgressDialog(this)
-            _encodingProgress!!.setMessage(getString(R.string.preparing))
-            _encodingProgress!!.show()
-            Log.i(TAG, "Launching ffmpeg")
-            val cmd = arguments.toTypedArray()
-            _ffmpeg!!.execute(cmd, object : ExecuteBinaryResponseHandler() {
-                override fun onStart() {
-                    Log.d(TAG, "ffmpeg execute onStart()")
-                }
-
-                override fun onSuccess(message: String) {
-                    Log.d(TAG, "ffmpeg execute onSuccess(): $message")
-                    val startIntent = Intent(this@MainActivity, AudioService::class.java)
-                    startIntent.putExtra(AudioService.AUDIO_FILENAME_ARG, processed.absolutePath)
-                    startService(startIntent)
-                    updateToPlaying()
-                }
-
-                override fun onProgress(message: String) {
-                    Log.d(TAG, "ffmpeg execute onProgress(): $message")
-                }
-
-                override fun onFailure(message: String) {
-                    Log.d(TAG, "ffmpeg execute onFailure(): $message")
-                    reportPlaybackFailure()
-                }
-
-                override fun onFinish() {
-                    Log.d(TAG, "ffmpeg execute onFinish()")
-                }
-            })
-        } catch (e: IOException) {
-            Log.i(TAG, "Failed to start playback", e)
-            reportPlaybackFailure()
-        } catch (e: FFmpegCommandAlreadyRunningException) {
-            Log.i(TAG, "Failed to start playback", e)
-            reportPlaybackFailure()
+        } else {
+            // Handle the case when no item is selected
+            Toast.makeText(this, "Please select a sound first", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -314,7 +327,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setControlsEnabled(enabled: Boolean) {
-        for (resId in intArrayOf(R.id.soundSpinner)) {
+        for (resId in intArrayOf(R.id.gridView)) {
             val view = findViewById<View>(resId)
             view.isEnabled = enabled
         }
@@ -431,7 +444,13 @@ class MainActivity : AppCompatActivity() {
             appName,
             libs.toString()
         )
-        wv.loadDataWithBaseURL("file:///android_res/drawable/", html, "text/html", "utf-8", null)
+        wv.loadDataWithBaseURL(
+            "file:///android_res/drawable/",
+            html,
+            "text/html",
+            "utf-8",
+            null
+        )
         AlertDialog.Builder(this)
             .setView(wv)
             .setCancelable(true)
