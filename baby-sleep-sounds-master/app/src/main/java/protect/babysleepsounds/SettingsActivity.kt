@@ -66,7 +66,7 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    fun appuyerSurBoutonAppliquer(view: View){
+    fun appuyerSurBoutonAppliquer(view: View) {
         val stopMusicIntent = Intent("STOP_MUSIC_ACTION")
         sendBroadcast(stopMusicIntent)
     }

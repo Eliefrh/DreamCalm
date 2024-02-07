@@ -1,7 +1,5 @@
 package protect.babysleepsounds
 
-import android.app.Activity
-import android.app.Instrumentation
 import android.app.ProgressDialog
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -23,11 +21,9 @@ import android.widget.GridView
 import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.view.get
 import com.google.common.collect.ImmutableMap
 import nl.bravobit.ffmpeg.ExecuteBinaryResponseHandler
 import nl.bravobit.ffmpeg.FFmpeg
@@ -50,6 +46,7 @@ class MainActivity : AppCompatActivity() {
     private var _ffmpeg: FFmpeg? = null
     private var _encodingProgress: ProgressDialog? = null
     private var selectedPosition: Int = -1
+    lateinit var soundItems :List<SoundItem>
 
     //pour recevoir message d une activity ouvert avec intent ne marche pas vu qu activity va etre fini
     /**private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -117,7 +114,7 @@ class MainActivity : AppCompatActivity() {
             .build()
 
         val gridView = findViewById<GridView>(R.id.gridView)
-        val soundItems = _soundMap?.keys?.map { SoundItem(it) } ?: emptyList()
+        soundItems = _soundMap?.keys?.map { SoundItem(it) } ?: emptyList()
         val adapter = SoundAdapter(this, soundItems)
         gridView.adapter = adapter
         var playingMusicImg= findViewById<ImageView>(R.id.playingSound)
@@ -158,7 +155,7 @@ class MainActivity : AppCompatActivity() {
         val button = findViewById<Button>(R.id.button)
         button.setOnClickListener {
             if (_playing == false) {
-                startPlayback(soundItems)
+                startPlayback()
             } else {
                 stopPlayback()
             }
@@ -179,7 +176,7 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, R.string.playbackNotSupported, Toast.LENGTH_LONG).show()
     }
 
-    private fun startPlayback(soundItems: List<SoundItem>) {
+    private fun startPlayback() {
 
         val selectedPosition = this.selectedPosition
         //check if its a valid selection
