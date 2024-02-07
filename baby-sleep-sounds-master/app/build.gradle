@@ -14,6 +14,7 @@ android {
         versionCode 15
         versionName "0.11"
         multiDexEnabled true
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
     }
     buildTypes {
@@ -48,14 +49,22 @@ repositories {
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'androidx.preference:preference:1.1.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
-    implementation 'com.google.android.material:material:1.2.1'
+    implementation 'androidx.preference:preference-ktx:1.2.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.google.android.material:material:1.11.0'
     implementation 'com.google.guava:guava:30.1-jre'
     implementation 'protect:android-ffmpeg:release@aar'
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.multidex:multidex:2.0.1'
 
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.0-alpha03'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.0-alpha03'
+
+    testImplementation 'com.google.truth:truth:1.0.1'
+    androidTestImplementation 'com.google.truth:truth:1.0.1'
+
+    implementation 'androidx.tracing:tracing:1.2.0'
 }
 
 spotbugs {

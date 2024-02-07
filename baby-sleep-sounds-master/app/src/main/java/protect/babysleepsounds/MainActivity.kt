@@ -174,6 +174,7 @@ class MainActivity : AppCompatActivity() {
         val id = _soundMap!![selectedSound]!!
         volumeControlStream = AudioManager.STREAM_MUSIC
         try {
+
             val originalFile = File(filesDir, ORIGINAL_MP3_FILE)
             Log.i(TAG, "Writing file out prior to WAV conversion")
             writeToFile(id, originalFile)
