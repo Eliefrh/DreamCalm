@@ -1,7 +1,9 @@
 package protect.babysleepsounds
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.preference.ListPreference
@@ -62,5 +64,10 @@ class SettingsActivity : AppCompatActivity() {
         private fun toggleCutoff(show: Boolean) {
             filterCutoff!!.isVisible = show
         }
+    }
+
+    fun appuyerSurBoutonAppliquer(view: View){
+        val stopMusicIntent = Intent("STOP_MUSIC_ACTION")
+        sendBroadcast(stopMusicIntent)
     }
 }
