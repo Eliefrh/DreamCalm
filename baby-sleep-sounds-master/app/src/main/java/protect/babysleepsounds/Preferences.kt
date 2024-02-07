@@ -37,7 +37,7 @@ class Preferences private constructor(context: Context?) {
 
     companion object {
         private const val LOW_PASS_FILTER_ENABLED = "filter_enabled"
-        private const val LOW_PASS_FILTER_FREQUENCY = "filter_value"
+        const val LOW_PASS_FILTER_FREQUENCY = "filter_value"
         private const val THEME = "theme"
         const val THEME_LIGHT = "light"
         const val THEME_DARK = "dark"
