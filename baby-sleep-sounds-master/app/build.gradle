@@ -56,6 +56,7 @@ dependencies {
     implementation 'protect:android-ffmpeg:release@aar'
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'androidx.test:runner:1.5.2'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.2.0-alpha03'

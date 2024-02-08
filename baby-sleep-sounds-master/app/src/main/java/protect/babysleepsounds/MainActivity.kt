@@ -35,6 +35,9 @@ import java.util.Calendar
 import java.util.LinkedList
 import java.util.Timer
 import java.util.TimerTask
+import android.Manifest
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
 data class SoundItem(val imageResId: Int)
 
@@ -46,24 +49,29 @@ class MainActivity : AppCompatActivity() {
     private var _ffmpeg: FFmpeg? = null
     private var _encodingProgress: ProgressDialog? = null
     private var selectedPosition: Int = -1
-    lateinit var soundItems :List<SoundItem>
+    lateinit var soundItems: List<SoundItem>
+
+
+    // Déclaration de constantes pour les permissions
+    private val REQUEST_PERMISSION_CODE = 123
+    private val PERMISSIONS_REQUIRED = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
     //pour recevoir message d une activity ouvert avec intent ne marche pas vu qu activity va etre fini
     /**private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            var intent = result.data ?: Intent()
-            if (intent.hasExtra("appliquer")) {
-                Log.d("soso","marche")
-            }
-        }
+    if (result.resultCode == Activity.RESULT_OK) {
+    var intent = result.data ?: Intent()
+    if (intent.hasExtra("appliquer")) {
+    Log.d("soso","marche")
+    }
+    }
     }**/
 
     private val stopMusicReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (_playing) {
-            stopPlayback()
-            startPlayback()
-        }
+                stopPlayback()
+                startPlayback()
+            }
         }
     }
 
@@ -72,13 +80,141 @@ class MainActivity : AppCompatActivity() {
         registerReceiver(stopMusicReceiver, intentFilter)
         super.onStart()
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         Preferences[this]!!.applyTheme()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
+        checkPermissions()
 
+        initializeApp()
+
+        val gridView = findViewById<GridView>(R.id.gridView)
+        soundItems = _soundMap?.keys?.map { SoundItem(it) } ?: emptyList()
+        val adapter = SoundAdapter(this, soundItems)
+        gridView.adapter = adapter
+        var playingMusicImg = findViewById<ImageView>(R.id.playingSound)
+
+        gridView.setOnItemClickListener { parent, view, position, id ->
+            // Store the selected position in a variable
+            selectedPosition = position
+            playingMusicImg.setImageResource(soundItems[position].imageResId)
+        }
+
+        val sleepTimeoutSpinner = findViewById<Spinner>(R.id.sleepTimerSpinner)
+        val times: List<String> = _timeMap?.keys?.toList() ?: emptyList()
+        sleepTimeoutSpinner.onItemSelectedListener = object : OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                if (_playing) {
+                    updatePlayTimeout()
+                    Toast.makeText(this@MainActivity, R.string.sleepTimerUpdated, Toast.LENGTH_LONG)
+                        .show()
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                // noop
+            }
+
+        }
+        val timesAdapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item, times
+        )
+        timesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        sleepTimeoutSpinner.adapter = timesAdapter
+        volumeControlStream = AudioManager.STREAM_MUSIC
+
+
+        val button = findViewById<Button>(R.id.button)
+        button.setOnClickListener {
+            if (_playing == false) {
+                startPlayback()
+            } else {
+                stopPlayback()
+            }
+        }
+        _ffmpeg = FFmpeg.getInstance(this)
+        File(filesDir, "ffmpeg").setExecutable(true)
+
+        if (_ffmpeg is FFmpeg && _ffmpeg!!.isSupported()) {
+            button.isEnabled = true
+        } else {
+            Log.d(TAG, "ffmpeg not supported")
+            reportPlaybackUnsupported()
+        }
+        _ffmpeg = FFmpeg.getInstance(this)
+        File(filesDir, "ffmpeg").setExecutable(true)
+
+        // Add the code to set execute permissions for the directory and the FFmpeg binary file
+        val ffmpegDirectory = File("/data/user/0/protect.babysleepsounds/files/")
+        ffmpegDirectory.setExecutable(true)
+
+        val ffmpegFile = File("/data/user/0/protect.babysleepsounds/files/ffmpeg")
+        ffmpegFile.setExecutable(true)
+
+        if (_ffmpeg is FFmpeg && _ffmpeg!!.isSupported()) {
+            button.isEnabled = true
+        } else {
+            Log.d(TAG, "ffmpeg not supported")
+            reportPlaybackUnsupported()
+        }
+    }
+
+
+    private fun checkPermissions() {
+        val permissionsToRequest = mutableListOf<String>()
+        if (permissionsToRequest.isNotEmpty()) {
+            ActivityCompat.requestPermissions(
+                this,
+                permissionsToRequest.toTypedArray(),
+                REQUEST_PERMISSION_CODE
+            )
+        } else {
+            // Permissions already granted, continue with app initialization
+            initializeApp()
+        }
+    }
+
+    // Fonction pour gérer la réponse de l'utilisateur à la demande d'autorisations
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_PERMISSION_CODE) {
+            var allPermissionsGranted = true
+            for (result in grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    allPermissionsGranted = false
+                    break
+                }
+            }
+            if (allPermissionsGranted) {
+                // If all permissions are granted, initialize the app
+                initializeApp()
+            } else {
+                // If any permission is denied, inform the user and finish the activity
+                Toast.makeText(
+                    this,
+                    "Permission denied. App cannot function properly.",
+                    Toast.LENGTH_SHORT
+                ).show()
+                finish()
+            }
+        }
+    }
+
+
+    private fun initializeApp() {
         // These sound files by convention are:
         // - take a ~10 second clip
         // - Apply a 2 second fade-in and fade-out
@@ -113,60 +249,6 @@ class MainActivity : AppCompatActivity() {
             .put(resources.getString(R.string.time_8hour), 1000 * 60 * 60 * 8)
             .build()
 
-        val gridView = findViewById<GridView>(R.id.gridView)
-        soundItems = _soundMap?.keys?.map { SoundItem(it) } ?: emptyList()
-        val adapter = SoundAdapter(this, soundItems)
-        gridView.adapter = adapter
-        var playingMusicImg= findViewById<ImageView>(R.id.playingSound)
-
-        gridView.setOnItemClickListener { parent, view, position, id ->
-            // Store the selected position in a variable
-            selectedPosition = position
-            playingMusicImg.setImageResource(soundItems[position].imageResId)
-        }
-
-        val sleepTimeoutSpinner = findViewById<Spinner>(R.id.sleepTimerSpinner)
-        val times: List<String> = _timeMap?.keys?.toList() ?: emptyList()
-        sleepTimeoutSpinner.onItemSelectedListener = object : OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                if (_playing) {
-                    updatePlayTimeout()
-                    Toast.makeText(this@MainActivity, R.string.sleepTimerUpdated, Toast.LENGTH_LONG)
-                        .show()
-                }
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                // noop
-            }
-        }
-        val timesAdapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item, times
-        )
-        timesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        sleepTimeoutSpinner.adapter = timesAdapter
-        volumeControlStream = AudioManager.STREAM_MUSIC
-        val button = findViewById<Button>(R.id.button)
-        button.setOnClickListener {
-            if (_playing == false) {
-                startPlayback()
-            } else {
-                stopPlayback()
-            }
-        }
-        _ffmpeg = FFmpeg.getInstance(this)
-        if (_ffmpeg is FFmpeg && _ffmpeg!!.isSupported()) {
-            button.isEnabled = true
-        } else {
-            Log.d(TAG, "ffmpeg not supported")
-            reportPlaybackUnsupported()
-        }
     }
 
     /**
@@ -187,7 +269,8 @@ class MainActivity : AppCompatActivity() {
             val id = _soundMap!![selectedSound]!!
             volumeControlStream = AudioManager.STREAM_MUSIC
             try {
-                val originalFile = File(filesDir, ORIGINAL_MP3_FILE)
+                // Replace the following line to use getExternalFilesDir()
+                val originalFile = File(getExternalFilesDir(null), ORIGINAL_MP3_FILE)
                 Log.i(TAG, "Writing file out prior to WAV conversion")
                 writeToFile(id, originalFile)
                 val processed = File(filesDir, PROCESSED_RAW_FILE)
@@ -367,9 +450,11 @@ class MainActivity : AppCompatActivity() {
         }
         for (toDelete in arrayOf(ORIGINAL_MP3_FILE, PROCESSED_RAW_FILE)) {
             val file = File(filesDir, toDelete)
-            val result = file.delete()
-            if (result == false) {
-                Log.w(TAG, "Failed to delete file on exit: " + file.absolutePath)
+            if (file.exists()) { // Check if the file exists before deleting
+                val result = file.delete()
+                if (!result) {
+                    Log.w(TAG, "Failed to delete file on exit: " + file.absolutePath)
+                }
             }
         }
         super.onDestroy()
@@ -485,7 +570,6 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton(R.string.ok) { dialog, which -> dialog.dismiss() }
             .show()
     }
-
 
 
     companion object {
