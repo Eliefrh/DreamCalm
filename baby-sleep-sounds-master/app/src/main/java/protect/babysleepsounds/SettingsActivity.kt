@@ -3,6 +3,7 @@ package protect.babysleepsounds
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -69,5 +70,15 @@ class SettingsActivity : AppCompatActivity() {
     fun appuyerSurBoutonAppliquer(view: View){
         val stopMusicIntent = Intent("STOP_MUSIC_ACTION")
         sendBroadcast(stopMusicIntent)
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_MEDIA_PLAY || keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE) {
+            val blutoothIntent = Intent("ON_KEY_DOWN")
+            blutoothIntent.putExtra("keyEvent", keyCode)
+            sendBroadcast(blutoothIntent)
+            return true // return true to indicate that the key event has been handled
+        }
+        return super.onKeyDown(keyCode, event)
     }
 }

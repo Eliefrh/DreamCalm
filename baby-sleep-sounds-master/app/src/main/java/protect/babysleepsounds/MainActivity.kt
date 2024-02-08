@@ -3,6 +3,8 @@ package protect.babysleepsounds
 import android.app.Activity
 import android.app.Instrumentation
 import android.app.ProgressDialog
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -10,7 +12,9 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.os.Bundle
+import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
+import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -47,6 +51,7 @@ class MainActivity : AppCompatActivity() {
     private var _timer: Timer? = null
     private var _ffmpeg: FFmpeg? = null
     private var _encodingProgress: ProgressDialog? = null
+    private var bluetoothAdapter: BluetoothAdapter? = null
 
     //pour recevoir message d une activity ouvert avec intent ne marche pas vu qu activity va etre fini
     /**private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -67,17 +72,57 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+
+    //broadcastreciever pour les bouttons bluetooth
+    private val bluetoothReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            intent?.let {
+                val keyCode = it.getIntExtra("keyEvent", KeyEvent.KEYCODE_UNKNOWN)
+                if (keyCode == KeyEvent.KEYCODE_MEDIA_PLAY) {
+                    startPlayback()
+                } else if (keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE) {
+                    stopPlayback()
+                }
+            }
+        }
+    }
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_MEDIA_PLAY || keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE) {
+            val blutoothIntent = Intent("ON_KEY_DOWN")
+            blutoothIntent.putExtra("keyEvent", keyCode)
+            sendBroadcast(blutoothIntent)
+            return true // return true to indicate that the key event has been handled
+        }
+        return super.onKeyDown(keyCode, event)
+    }
     override fun onStart() {
         val intentFilter = IntentFilter("STOP_MUSIC_ACTION")
         registerReceiver(stopMusicReceiver, intentFilter)
+
+        val intentFilter2 = IntentFilter("ON_KEY_DOWN")
+        registerReceiver(bluetoothReceiver, intentFilter2)
         super.onStart()
     }
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         Preferences[this]!!.applyTheme()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
+
+        // Initialize BluetoothAdapter
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+        if (bluetoothAdapter == null) {
+            // Device doesn't support Bluetooth
+            Toast.makeText(this, "Bluetooth is not supported on this device", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+
 
         // These sound files by convention are:
         // - take a ~10 second clip
@@ -363,6 +408,9 @@ class MainActivity : AppCompatActivity() {
                 Log.w(TAG, "Failed to delete file on exit: " + file.absolutePath)
             }
         }
+        unregisterReceiver(stopMusicReceiver)
+        unregisterReceiver(bluetoothReceiver)
+
         super.onDestroy()
     }
 
