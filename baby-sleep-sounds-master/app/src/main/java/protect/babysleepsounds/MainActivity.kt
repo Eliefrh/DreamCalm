@@ -72,21 +72,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-
-    //broadcastreciever pour les bouttons bluetooth
-    private val bluetoothReceiver = object : BroadcastReceiver() {
+    private val stopStartMusicReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            intent?.let {
-                val keyCode = it.getIntExtra("keyEvent", KeyEvent.KEYCODE_UNKNOWN)
-                if (keyCode == KeyEvent.KEYCODE_MEDIA_PLAY) {
-                    startPlayback()
-                } else if (keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE) {
-                    stopPlayback()
-                }
+            if (_playing) {
+                stopPlayback()
+            }else{
+                startPlayback()
             }
         }
     }
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_MEDIA_PLAY || keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE) {
             val blutoothIntent = Intent("ON_KEY_DOWN")
@@ -100,8 +95,12 @@ class MainActivity : AppCompatActivity() {
         val intentFilter = IntentFilter("STOP_MUSIC_ACTION")
         registerReceiver(stopMusicReceiver, intentFilter)
 
-        val intentFilter2 = IntentFilter("ON_KEY_DOWN")
-        registerReceiver(bluetoothReceiver, intentFilter2)
+        val intentFilter3 = IntentFilter("STOP_START_MUSIC")
+        registerReceiver(stopStartMusicReceiver, intentFilter3)
+
+
+        val startIntent = Intent(this@MainActivity, BluetoothControlService::class.java)
+        startService(startIntent)
         super.onStart()
     }
 
@@ -409,7 +408,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         unregisterReceiver(stopMusicReceiver)
-        unregisterReceiver(bluetoothReceiver)
+        unregisterReceiver(stopStartMusicReceiver)
 
         super.onDestroy()
     }
