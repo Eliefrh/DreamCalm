@@ -1,6 +1,8 @@
 package protect.babysleepsounds
 
 import android.app.ProgressDialog
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -8,7 +10,9 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.os.Bundle
+import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
+import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -48,6 +52,7 @@ class MainActivity : AppCompatActivity() {
     private var _timer: Timer? = null
     private var _ffmpeg: FFmpeg? = null
     private var _encodingProgress: ProgressDialog? = null
+    private var bluetoothAdapter: BluetoothAdapter? = null
     private var selectedPosition: Int = -1
     lateinit var soundItems: List<SoundItem>
 
@@ -75,11 +80,40 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+
+    //broadcastreciever pour les bouttons bluetooth
+    private val bluetoothReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            intent?.let {
+                val keyCode = it.getIntExtra("keyEvent", KeyEvent.KEYCODE_UNKNOWN)
+                if (keyCode == KeyEvent.KEYCODE_MEDIA_PLAY) {
+                    startPlayback()
+                } else if (keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE) {
+                    stopPlayback()
+                }
+            }
+        }
+    }
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_MEDIA_PLAY || keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE) {
+            val blutoothIntent = Intent("ON_KEY_DOWN")
+            blutoothIntent.putExtra("keyEvent", keyCode)
+            sendBroadcast(blutoothIntent)
+            return true // return true to indicate that the key event has been handled
+        }
+        return super.onKeyDown(keyCode, event)
+    }
     override fun onStart() {
         val intentFilter = IntentFilter("STOP_MUSIC_ACTION")
         registerReceiver(stopMusicReceiver, intentFilter)
+
+        val intentFilter2 = IntentFilter("ON_KEY_DOWN")
+        registerReceiver(bluetoothReceiver, intentFilter2)
         super.onStart()
     }
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Preferences[this]!!.applyTheme()
@@ -89,6 +123,49 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         checkPermissions()
 
+        // Initialize BluetoothAdapter
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+        if (bluetoothAdapter == null) {
+            // Device doesn't support Bluetooth
+            Toast.makeText(this, "Bluetooth is not supported on this device", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+
+
+        // These sound files by convention are:
+        // - take a ~10 second clip
+        // - Apply a 2 second fade-in and fade-out
+        // - Cut the first 3 seconds, and place it over the last three seconds
+        //   which should create a seamless track appropriate for looping
+        // - Save as a mp3 file, 128kbps, stereo
+        _soundMap = ImmutableMap.builder<Int, Int>()
+            .put(R.mipmap.campfire_foreground, R.raw.campfire)
+            .put(R.mipmap.dryer_foreground, R.raw.dryer)
+            .put(R.mipmap.fan_foreground, R.raw.fan)
+            .put(R.mipmap.ocean_foreground, R.raw.ocean)
+            .put(R.mipmap.rain_foreground, R.raw.rain)
+            .put(R.mipmap.refrigerator_foreground, R.raw.refrigerator)
+            .put(R.mipmap.shhh_foreground, R.raw.shhhh)
+            .put(R.mipmap.shower_foreground, R.raw.shower)
+            .put(R.mipmap.stream_foreground, R.raw.stream)
+            .put(R.mipmap.vacuum_foreground, R.raw.vacuum)
+            .put(R.mipmap.water_foreground, R.raw.water)
+            .put(R.mipmap.waterfall_foreground, R.raw.waterfall)
+            .put(R.mipmap.waves_foreground, R.raw.waves)
+            .put(R.mipmap.white_noise_foreground, R.raw.white_noise)
+            .build()
+        _timeMap = ImmutableMap.builder<String, Int>()
+            .put(resources.getString(R.string.disabled), 0)
+            .put(resources.getString(R.string.time_1minute), 1000 * 60 * 1)
+            .put(resources.getString(R.string.time_5minute), 1000 * 60 * 5)
+            .put(resources.getString(R.string.time_10minute), 1000 * 60 * 10)
+            .put(resources.getString(R.string.time_30minute), 1000 * 60 * 30)
+            .put(resources.getString(R.string.time_1hour), 1000 * 60 * 60 * 1)
+            .put(resources.getString(R.string.time_2hour), 1000 * 60 * 60 * 2)
+            .put(resources.getString(R.string.time_4hour), 1000 * 60 * 60 * 4)
+            .put(resources.getString(R.string.time_8hour), 1000 * 60 * 60 * 8)
+            .build()
         initializeApp()
 
         val gridView = findViewById<GridView>(R.id.gridView)
@@ -457,6 +534,9 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+        unregisterReceiver(stopMusicReceiver)
+        unregisterReceiver(bluetoothReceiver)
+
         super.onDestroy()
     }
 
