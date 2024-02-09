@@ -57,6 +57,7 @@
         </activity>
 
         <service android:name=".AudioService" />
+        <service android:name=".BluetoothControlService" />
 
         <activity
             android:name=".SettingsActivity"
