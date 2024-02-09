@@ -28,6 +28,7 @@ class BluetoothControlService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Register BroadcastReceiver
         val intentFilter = IntentFilter("ON_KEY_DOWN")
+
         registerReceiver(bluetoothReceiver, intentFilter)
 
         // Display a persistent notification to indicate the service is running

@@ -9,6 +9,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import java.io.File
@@ -39,21 +40,53 @@ class AudioService : Service() {
             stopForeground(true)
             stopSelf()
         }
-
+        when (intent.action) {
+            ACTION_PLAY -> {
+                setNotification()
+            }
+        }
         // If this service is killed, let is remain dead until explicitly started again.
         return START_NOT_STICKY
     }
+
+
 
     private fun setNotification() {
         var channelId = ""
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             channelId = createNotificationChannel()
         }
+
+        // Create a pending intent for the Play action
+        val playIntent = Intent(this, AudioService::class.java).apply {
+            action = ACTION_PLAY
+        }
+        val playPendingIntent = PendingIntent.getService(this, 0, playIntent,
+            PendingIntent.FLAG_IMMUTABLE)
+
+        // Create a pending intent for the Pause action
+        val pauseIntent = Intent(this, AudioService::class.java).apply {
+            action = ACTION_PAUSE
+        }
+        val pausePendingIntent = PendingIntent.getService(this, 0, pauseIntent,
+            PendingIntent.FLAG_IMMUTABLE)
+
+        // Create a pending intent for the Stop action
+        val stopIntent = Intent(this, AudioService::class.java).apply {
+            action = ACTION_STOP
+        }
+        val stopPendingIntent = PendingIntent.getService(this, 0, stopIntent,
+            PendingIntent.FLAG_IMMUTABLE)
+
         val builder = NotificationCompat.Builder(this, channelId)
             .setOngoing(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setSmallIcon(R.drawable.playing_notification)
             .setContentTitle(getString(R.string.app_name))
             .setContentText(getString(R.string.notificationPlaying))
+            .addAction(R.drawable.ic_play, "play", playPendingIntent) // #0
+            .addAction(R.drawable.ic_play, "stop", pausePendingIntent) // #1
+
 
         // Creates an explicit intent for the Activity
         val resultIntent = Intent(this, MainActivity::class.java)
@@ -91,5 +124,8 @@ class AudioService : Service() {
         private const val NOTIFICATION_ID = 1
         private const val NOTIFICATION_CHANNEL_ID = TAG
         const val AUDIO_FILENAME_ARG = "AUDIO_FILENAME_ARG"
+        const val ACTION_PLAY = "protect.babysleepsounds.action.PLAY"
+        const val ACTION_PAUSE = "protect.babysleepsounds.action.PAUSE"
+        const val ACTION_STOP = "protect.babysleepsounds.action.STOP"
     }
 }
