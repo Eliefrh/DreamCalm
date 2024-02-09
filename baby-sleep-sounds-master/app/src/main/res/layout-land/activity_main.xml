@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="protect.babysleepsounds.MainActivity">
+
+
+    <!--    <TextView-->
+    <!--        android:id="@+id/sound_label"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginStart="20.0dip"-->
+    <!--        android:layout_marginTop="20.0dip"-->
+    <!--        android:layout_marginEnd="20.0dip"-->
+    <!--        android:labelFor="@+id/budgetSpinner"-->
+    <!--        android:text="@string/sound"-->
+    <!--        android:textSize="16.0sp"-->
+    <!--        android:textStyle="bold"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toBottomOf="@+id/description" />-->
+
+    <!--    <GridView-->
+    <!--        android:id="@+id/soundGridView"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:numColumns="3"-->
+    <!--        android:columnWidth="100dp"-->
+    <!--        android:verticalSpacing="10dp"-->
+    <!--        android:horizontalSpacing="10dp"-->
+    <!--        android:stretchMode="columnWidth"-->
+    <!--        app:layout_constraintTop_toBottomOf="@id/sound_label"-->
+    <!--        app:layout_constraintBottom_toBottomOf="@id/sound_label"/>-->
+
+    <!--    <Spinner-->
+    <!--        android:id="@+id/soundSpinner"-->
+    <!--        android:layout_width="343dp"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:drawSelectorOnTop="true"-->
+    <!--        android:spinnerMode="dropdown"-->
+    <!--        app:layout_constraintBottom_toBottomOf="@id/sound_label"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintStart_toEndOf="@id/sound_label"-->
+    <!--        app:layout_constraintTop_toTopOf="@id/sound_label" />-->
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/description"
+        android:layout_width="281dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="16dp"
+        android:text="@string/description"
+        android:textSize="16.0sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <GridView
+        android:id="@+id/gridView"
+        android:layout_width="355dp"
+        android:layout_height="336dp"
+        android:choiceMode="singleChoice"
+        android:gravity="center"
+        android:horizontalSpacing="8dp"
+        android:numColumns="3"
+        android:padding="8dp"
+        android:verticalSpacing="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.958"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:layout_constraintVertical_bias="0.397" />
+
+    <Spinner
+        android:id="@+id/sleepTimerSpinner"
+        android:layout_width="207dp"
+        android:layout_height="21dp"
+        android:layout_marginBottom="20dp"
+        android:drawSelectorOnTop="true"
+        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintEnd_toStartOf="@+id/gridView"
+        app:layout_constraintHorizontal_bias="0.145"
+        app:layout_constraintStart_toEndOf="@+id/sleep_timer_label"
+        app:layout_constraintTop_toBottomOf="@+id/playingSound"
+        app:layout_constraintVertical_bias="0.955" />
+
+    <TextView
+        android:id="@+id/sleep_timer_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginBottom="20dp"
+        android:labelFor="@+id/sleepTimerSpinner"
+        android:text="@string/sleepTimer"
+        android:textSize="16.0sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/playingSound"
+        app:layout_constraintVertical_bias="0.97" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="262dp"
+        android:layout_height="40dp"
+        android:enabled="false"
+        android:text="@string/play"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/gridView"
+        app:layout_constraintHorizontal_bias="0.525"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:layout_constraintVertical_bias="0.949" />
+
+    <ImageView
+        android:id="@+id/playingSound"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintEnd_toStartOf="@+id/gridView"
+        app:layout_constraintHorizontal_bias="0.409"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/description"
+        app:layout_constraintVertical_bias="0.428"
+        tools:srcCompat="@tools:sample/avatars" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
