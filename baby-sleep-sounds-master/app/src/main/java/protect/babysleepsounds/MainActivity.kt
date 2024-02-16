@@ -123,13 +123,13 @@ class MainActivity : AppCompatActivity() {
         checkPermissions()
 
         // Initialize BluetoothAdapter
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+        /**bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         if (bluetoothAdapter == null) {
             // Device doesn't support Bluetooth
             Toast.makeText(this, "Bluetooth is not supported on this device", Toast.LENGTH_SHORT).show()
             finish()
             return
-        }
+        }**/
 
 
         // These sound files by convention are:
