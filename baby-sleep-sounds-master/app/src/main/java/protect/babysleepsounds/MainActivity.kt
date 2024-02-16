@@ -1,7 +1,5 @@
 package protect.babysleepsounds
 
-import android.app.Activity
-import android.app.Instrumentation
 import android.app.ProgressDialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -23,10 +21,10 @@ import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.GridView
 import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -41,6 +39,9 @@ import java.util.Calendar
 import java.util.LinkedList
 import java.util.Timer
 import java.util.TimerTask
+import android.Manifest
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
 data class SoundItem(val imageResId: Int)
 
@@ -52,23 +53,30 @@ class MainActivity : AppCompatActivity() {
     private var _ffmpeg: FFmpeg? = null
     private var _encodingProgress: ProgressDialog? = null
     private var bluetoothAdapter: BluetoothAdapter? = null
+    private var selectedPosition: Int = -1
+    lateinit var soundItems: List<SoundItem>
+
+
+    // Déclaration de constantes pour les permissions
+    private val REQUEST_PERMISSION_CODE = 123
+    private val PERMISSIONS_REQUIRED = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
     //pour recevoir message d une activity ouvert avec intent ne marche pas vu qu activity va etre fini
     /**private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            var intent = result.data ?: Intent()
-            if (intent.hasExtra("appliquer")) {
-                Log.d("soso","marche")
-            }
-        }
+    if (result.resultCode == Activity.RESULT_OK) {
+    var intent = result.data ?: Intent()
+    if (intent.hasExtra("appliquer")) {
+    Log.d("soso","marche")
+    }
+    }
     }**/
 
     private val stopMusicReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (_playing) {
-            stopPlayback()
-            startPlayback()
-        }
+                stopPlayback()
+                startPlayback()
+            }
         }
     }
 
@@ -112,6 +120,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
+        checkPermissions()
 
         // Initialize BluetoothAdapter
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
@@ -156,21 +165,20 @@ class MainActivity : AppCompatActivity() {
             .put(resources.getString(R.string.time_4hour), 1000 * 60 * 60 * 4)
             .put(resources.getString(R.string.time_8hour), 1000 * 60 * 60 * 8)
             .build()
+        initializeApp()
 
-        val soundSpinner = findViewById<Spinner>(R.id.soundSpinner)
-        val soundItems = _soundMap?.keys?.map { SoundItem(it) } ?: emptyList()
+        val gridView = findViewById<GridView>(R.id.gridView)
+        soundItems = _soundMap?.keys?.map { SoundItem(it) } ?: emptyList()
         val adapter = SoundAdapter(this, soundItems)
-        soundSpinner.adapter = adapter
+        gridView.adapter = adapter
+        var playingMusicImg = findViewById<ImageView>(R.id.playingSound)
 
+        gridView.setOnItemClickListener { parent, view, position, id ->
+            // Store the selected position in a variable
+            selectedPosition = position
+            playingMusicImg.setImageResource(soundItems[position].imageResId)
+        }
 
-//        val soundSpinner = findViewById<Spinner>(R.id.soundSpinner)
-//        val names: List<Int> = _soundMap?.keys?.toList() ?: emptyList()
-//        val dataAdapter = ArrayAdapter(
-//            this,
-//            android.R.layout.simple_spinner_item, names
-//        )
-//        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-//        soundSpinner.adapter = dataAdapter
         val sleepTimeoutSpinner = findViewById<Spinner>(R.id.sleepTimerSpinner)
         val times: List<String> = _timeMap?.keys?.toList() ?: emptyList()
         sleepTimeoutSpinner.onItemSelectedListener = object : OnItemSelectedListener {
@@ -190,6 +198,7 @@ class MainActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {
                 // noop
             }
+
         }
         val timesAdapter = ArrayAdapter(
             this,
@@ -198,6 +207,8 @@ class MainActivity : AppCompatActivity() {
         timesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         sleepTimeoutSpinner.adapter = timesAdapter
         volumeControlStream = AudioManager.STREAM_MUSIC
+
+
         val button = findViewById<Button>(R.id.button)
         button.setOnClickListener {
             if (_playing == false) {
@@ -207,12 +218,113 @@ class MainActivity : AppCompatActivity() {
             }
         }
         _ffmpeg = FFmpeg.getInstance(this)
+        File(filesDir, "ffmpeg").setExecutable(true)
+
         if (_ffmpeg is FFmpeg && _ffmpeg!!.isSupported()) {
             button.isEnabled = true
         } else {
             Log.d(TAG, "ffmpeg not supported")
             reportPlaybackUnsupported()
         }
+        _ffmpeg = FFmpeg.getInstance(this)
+        File(filesDir, "ffmpeg").setExecutable(true)
+
+        // Add the code to set execute permissions for the directory and the FFmpeg binary file
+        val ffmpegDirectory = File("/data/user/0/protect.babysleepsounds/files/")
+        ffmpegDirectory.setExecutable(true)
+
+        val ffmpegFile = File("/data/user/0/protect.babysleepsounds/files/ffmpeg")
+        ffmpegFile.setExecutable(true)
+
+        if (_ffmpeg is FFmpeg && _ffmpeg!!.isSupported()) {
+            button.isEnabled = true
+        } else {
+            Log.d(TAG, "ffmpeg not supported")
+            reportPlaybackUnsupported()
+        }
+    }
+
+
+    private fun checkPermissions() {
+        val permissionsToRequest = mutableListOf<String>()
+        if (permissionsToRequest.isNotEmpty()) {
+            ActivityCompat.requestPermissions(
+                this,
+                permissionsToRequest.toTypedArray(),
+                REQUEST_PERMISSION_CODE
+            )
+        } else {
+            // Permissions already granted, continue with app initialization
+            initializeApp()
+        }
+    }
+
+    // Fonction pour gérer la réponse de l'utilisateur à la demande d'autorisations
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_PERMISSION_CODE) {
+            var allPermissionsGranted = true
+            for (result in grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    allPermissionsGranted = false
+                    break
+                }
+            }
+            if (allPermissionsGranted) {
+                // If all permissions are granted, initialize the app
+                initializeApp()
+            } else {
+                // If any permission is denied, inform the user and finish the activity
+                Toast.makeText(
+                    this,
+                    "Permission denied. App cannot function properly.",
+                    Toast.LENGTH_SHORT
+                ).show()
+                finish()
+            }
+        }
+    }
+
+
+    private fun initializeApp() {
+        // These sound files by convention are:
+        // - take a ~10 second clip
+        // - Apply a 2 second fade-in and fade-out
+        // - Cut the first 3 seconds, and place it over the last three seconds
+        //   which should create a seamless track appropriate for looping
+        // - Save as a mp3 file, 128kbps, stereo
+        _soundMap = ImmutableMap.builder<Int, Int>()
+            .put(R.mipmap.campfire_foreground, R.raw.campfire)
+            .put(R.mipmap.dryer_foreground, R.raw.dryer)
+            .put(R.mipmap.fan_foreground, R.raw.fan)
+            .put(R.mipmap.ocean_foreground, R.raw.ocean)
+            .put(R.mipmap.rain_foreground, R.raw.rain)
+            .put(R.mipmap.refrigerator_foreground, R.raw.refrigerator)
+            .put(R.mipmap.shhh_foreground, R.raw.shhhh)
+            .put(R.mipmap.shower_foreground, R.raw.shower)
+            .put(R.mipmap.stream_foreground, R.raw.stream)
+            .put(R.mipmap.vacuum_foreground, R.raw.vacuum)
+            .put(R.mipmap.water_foreground, R.raw.water)
+            .put(R.mipmap.waterfall_foreground, R.raw.waterfall)
+            .put(R.mipmap.waves_foreground, R.raw.waves)
+            .put(R.mipmap.white_noise_foreground, R.raw.white_noise)
+            .build()
+        _timeMap = ImmutableMap.builder<String, Int>()
+            .put(resources.getString(R.string.disabled), 0)
+            .put(resources.getString(R.string.time_1minute), 1000 * 60 * 1)
+            .put(resources.getString(R.string.time_5minute), 1000 * 60 * 5)
+            .put(resources.getString(R.string.time_10minute), 1000 * 60 * 10)
+            .put(resources.getString(R.string.time_30minute), 1000 * 60 * 30)
+            .put(resources.getString(R.string.time_1hour), 1000 * 60 * 60 * 1)
+            .put(resources.getString(R.string.time_2hour), 1000 * 60 * 60 * 2)
+            .put(resources.getString(R.string.time_4hour), 1000 * 60 * 60 * 4)
+            .put(resources.getString(R.string.time_8hour), 1000 * 60 * 60 * 8)
+            .build()
+
     }
 
     /**
@@ -223,76 +335,88 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startPlayback() {
-        val soundSpinner = findViewById<Spinner>(R.id.soundSpinner)
-        val selectedSoundItem = soundSpinner.selectedItem as SoundItem
-        val selectedSound = selectedSoundItem.imageResId
-        val id = _soundMap!![selectedSound]!!
-        volumeControlStream = AudioManager.STREAM_MUSIC
-        try {
 
-            val originalFile = File(filesDir, ORIGINAL_MP3_FILE)
-            Log.i(TAG, "Writing file out prior to WAV conversion")
-            writeToFile(id, originalFile)
-            val processed = File(filesDir, PROCESSED_RAW_FILE)
-            if (processed.exists()) {
-                val result = processed.delete()
-                if (!result) {
-                    throw IOException("Unable to delete previous file, cannot prepare new file")
+        val selectedPosition = this.selectedPosition
+        //check if its a valid selection
+        if (selectedPosition != -1 && selectedPosition < soundItems.size) {
+            val selectedSoundItem = soundItems[selectedPosition]
+            val selectedSound = selectedSoundItem.imageResId
+            Log.d("Elie", selectedSound.toString())
+            val id = _soundMap!![selectedSound]!!
+            volumeControlStream = AudioManager.STREAM_MUSIC
+            try {
+                // Replace the following line to use getExternalFilesDir()
+                val originalFile = File(getExternalFilesDir(null), ORIGINAL_MP3_FILE)
+                Log.i(TAG, "Writing file out prior to WAV conversion")
+                writeToFile(id, originalFile)
+                val processed = File(filesDir, PROCESSED_RAW_FILE)
+                if (processed.exists()) {
+                    val result = processed.delete()
+                    if (!result) {
+                        throw IOException("Unable to delete previous file, cannot prepare new file")
+                    }
                 }
+                Log.i(TAG, "Converting file to WAV")
+                val arguments = LinkedList<String>()
+                arguments.add("-i")
+                arguments.add(originalFile.absolutePath)
+                if (Preferences[this]!!.isLowPassFilterEnabled) {
+                    val frequencyValue = Preferences[this]!!.lowPassFilterFrequency
+                    Log.i(TAG, "Will perform lowpass filter to $frequencyValue Hz")
+                    arguments.add("-af")
+                    arguments.add("lowpass=frequency=$frequencyValue")
+                }
+
+                arguments.add("-f")
+                arguments.add("s16le")
+                arguments.add("-acodec")
+                arguments.add("pcm_s16le")
+                arguments.add(processed.absolutePath)
+                _encodingProgress = ProgressDialog(this)
+                _encodingProgress!!.setMessage(getString(R.string.preparing))
+                _encodingProgress!!.show()
+                Log.i(TAG, "Launching ffmpeg")
+                val cmd = arguments.toTypedArray()
+                _ffmpeg!!.execute(cmd, object : ExecuteBinaryResponseHandler() {
+                    override fun onStart() {
+                        Log.d(TAG, "ffmpeg execute onStart()")
+                    }
+
+                    override fun onSuccess(message: String) {
+                        Log.d(TAG, "ffmpeg execute onSuccess(): $message")
+                        val startIntent = Intent(this@MainActivity, AudioService::class.java)
+                        startIntent.putExtra(
+                            AudioService.AUDIO_FILENAME_ARG,
+                            processed.absolutePath
+                        )
+                        startService(startIntent)
+                        updateToPlaying()
+                    }
+
+                    override fun onProgress(message: String) {
+                        Log.d(TAG, "ffmpeg execute onProgress(): $message")
+                    }
+
+                    override fun onFailure(message: String) {
+                        Log.d(TAG, "ffmpeg execute onFailure(): $message")
+                        reportPlaybackFailure()
+                    }
+
+                    override fun onFinish() {
+                        Log.d(TAG, "ffmpeg execute onFinish()")
+                    }
+                })
+            } catch (e: IOException) {
+                Log.i(TAG, "Failed to start playback", e)
+                reportPlaybackFailure()
+            } catch (e: FFmpegCommandAlreadyRunningException) {
+                Log.i(TAG, "Failed to start playback", e)
+                reportPlaybackFailure()
             }
-            Log.i(TAG, "Converting file to WAV")
-            val arguments = LinkedList<String>()
-            arguments.add("-i")
-            arguments.add(originalFile.absolutePath)
-            if (Preferences[this]!!.isLowPassFilterEnabled) {
-                val frequencyValue = Preferences[this]!!.lowPassFilterFrequency
-                Log.i(TAG, "Will perform lowpass filter to $frequencyValue Hz")
-                arguments.add("-af")
-                arguments.add("lowpass=frequency=$frequencyValue")
-            }
 
-            arguments.add("-f")
-            arguments.add("s16le")
-            arguments.add("-acodec")
-            arguments.add("pcm_s16le")
-            arguments.add(processed.absolutePath)
-            _encodingProgress = ProgressDialog(this)
-            _encodingProgress!!.setMessage(getString(R.string.preparing))
-            _encodingProgress!!.show()
-            Log.i(TAG, "Launching ffmpeg")
-            val cmd = arguments.toTypedArray()
-            _ffmpeg!!.execute(cmd, object : ExecuteBinaryResponseHandler() {
-                override fun onStart() {
-                    Log.d(TAG, "ffmpeg execute onStart()")
-                }
-
-                override fun onSuccess(message: String) {
-                    Log.d(TAG, "ffmpeg execute onSuccess(): $message")
-                    val startIntent = Intent(this@MainActivity, AudioService::class.java)
-                    startIntent.putExtra(AudioService.AUDIO_FILENAME_ARG, processed.absolutePath)
-                    startService(startIntent)
-                    updateToPlaying()
-                }
-
-                override fun onProgress(message: String) {
-                    Log.d(TAG, "ffmpeg execute onProgress(): $message")
-                }
-
-                override fun onFailure(message: String) {
-                    Log.d(TAG, "ffmpeg execute onFailure(): $message")
-                    reportPlaybackFailure()
-                }
-
-                override fun onFinish() {
-                    Log.d(TAG, "ffmpeg execute onFinish()")
-                }
-            })
-        } catch (e: IOException) {
-            Log.i(TAG, "Failed to start playback", e)
-            reportPlaybackFailure()
-        } catch (e: FFmpegCommandAlreadyRunningException) {
-            Log.i(TAG, "Failed to start playback", e)
-            reportPlaybackFailure()
+        } else {
+            // Handle the case when no item is selected
+            Toast.makeText(this, "Please select a sound first", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -390,7 +514,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setControlsEnabled(enabled: Boolean) {
-        for (resId in intArrayOf(R.id.soundSpinner)) {
+        for (resId in intArrayOf(R.id.gridView)) {
             val view = findViewById<View>(resId)
             view.isEnabled = enabled
         }
@@ -402,9 +526,11 @@ class MainActivity : AppCompatActivity() {
         }
         for (toDelete in arrayOf(ORIGINAL_MP3_FILE, PROCESSED_RAW_FILE)) {
             val file = File(filesDir, toDelete)
-            val result = file.delete()
-            if (result == false) {
-                Log.w(TAG, "Failed to delete file on exit: " + file.absolutePath)
+            if (file.exists()) { // Check if the file exists before deleting
+                val result = file.delete()
+                if (!result) {
+                    Log.w(TAG, "Failed to delete file on exit: " + file.absolutePath)
+                }
             }
         }
         unregisterReceiver(stopMusicReceiver)
@@ -510,14 +636,19 @@ class MainActivity : AppCompatActivity() {
             appName,
             libs.toString()
         )
-        wv.loadDataWithBaseURL("file:///android_res/drawable/", html, "text/html", "utf-8", null)
+        wv.loadDataWithBaseURL(
+            "file:///android_res/drawable/",
+            html,
+            "text/html",
+            "utf-8",
+            null
+        )
         AlertDialog.Builder(this)
             .setView(wv)
             .setCancelable(true)
             .setPositiveButton(R.string.ok) { dialog, which -> dialog.dismiss() }
             .show()
     }
-
 
 
     companion object {

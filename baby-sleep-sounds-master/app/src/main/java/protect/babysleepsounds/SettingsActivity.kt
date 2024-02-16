@@ -5,8 +5,10 @@ import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.isVisible
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -14,7 +16,9 @@ import androidx.preference.SeekBarPreference
 import androidx.preference.SwitchPreferenceCompat
 
 class SettingsActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
+
+
+        override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
@@ -33,6 +37,7 @@ class SettingsActivity : AppCompatActivity() {
             filterCutoff!!.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { preference, newValue ->
                     updateCutoffSummary(newValue as Int)
+                    
                     Preferences[activity]?.setLowPassFilterFrequency(newValue)
                     true
                 }
@@ -64,10 +69,13 @@ class SettingsActivity : AppCompatActivity() {
 
         private fun toggleCutoff(show: Boolean) {
             filterCutoff!!.isVisible = show
+            val applyButton = activity?.findViewById<Button>(R.id.boutonAppuyer)
+            applyButton?.isVisible = show
+
         }
     }
 
-    fun appuyerSurBoutonAppliquer(view: View){
+    fun appuyerSurBoutonAppliquer(view: View) {
         val stopMusicIntent = Intent("STOP_MUSIC_ACTION")
         sendBroadcast(stopMusicIntent)
     }
