@@ -2,10 +2,9 @@ package protect.babysleepsounds
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import android.view.KeyEvent
 import android.view.View
 import android.widget.Button
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.isVisible
@@ -17,6 +16,7 @@ import androidx.preference.SwitchPreferenceCompat
 
 class SettingsActivity : AppCompatActivity() {
 
+    val donnesVM: MainActivityViewModel by viewModels()
 
         override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,6 +26,9 @@ class SettingsActivity : AppCompatActivity() {
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         supportFragmentManager.beginTransaction().replace(R.id.settings_wrapper, Fragment())
             .commit()
+
+            val startIntentMedia = Intent(this@SettingsActivity, MediaPlaybackService::class.java)
+            startService(startIntentMedia)
     }
 
     class Fragment : PreferenceFragmentCompat() {
@@ -80,13 +83,4 @@ class SettingsActivity : AppCompatActivity() {
         sendBroadcast(stopMusicIntent)
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_MEDIA_PLAY || keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE) {
-            val blutoothIntent = Intent("ON_KEY_DOWN")
-            blutoothIntent.putExtra("keyEvent", keyCode)
-            sendBroadcast(blutoothIntent)
-            return true // return true to indicate that the key event has been handled
-        }
-        return super.onKeyDown(keyCode, event)
-    }
 }
