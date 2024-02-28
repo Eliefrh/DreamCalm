@@ -9,13 +9,13 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import java.io.File
 
 class AudioService : Service() {
     private var _mediaPlayer: LoopingAudioPlayer? = null
+
     override fun onBind(intent: Intent): IBinder? {
         // Used only in case of bound services.
         return null
@@ -117,6 +117,7 @@ class AudioService : Service() {
         if (_mediaPlayer != null) {
             _mediaPlayer!!.stop()
         }
+        super.onDestroy()
     }
 
     companion object {

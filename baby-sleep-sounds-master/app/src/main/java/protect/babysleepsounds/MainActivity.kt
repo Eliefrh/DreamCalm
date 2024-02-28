@@ -9,9 +9,10 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.media.AudioManager
+import android.media.session.MediaSession
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -25,6 +26,7 @@ import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -51,21 +53,13 @@ class MainActivity : AppCompatActivity() {
     private var bluetoothAdapter: BluetoothAdapter? = null
     lateinit var soundItems: List<SoundItem>
     private var isUserSelection = false
+    private lateinit var mediaSession: MediaSession
 
 
     // Déclaration de constantes pour les permissions
     private val REQUEST_PERMISSION_CODE = 123
     private val PERMISSIONS_REQUIRED = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
-    //pour recevoir message d une activity ouvert avec intent ne marche pas vu qu activity va etre fini
-    /**private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-    if (result.resultCode == Activity.RESULT_OK) {
-    var intent = result.data ?: Intent()
-    if (intent.hasExtra("appliquer")) {
-    Log.d("soso","marche")
-    }
-    }
-    }**/
 
     private val stopMusicReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -86,15 +80,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_MEDIA_PLAY || keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE) {
-            val blutoothIntent = Intent("ON_KEY_DOWN")
-            blutoothIntent.putExtra("keyEvent", keyCode)
-            sendBroadcast(blutoothIntent)
-            return true // return true to indicate that the key event has been handled
-        }
-        return super.onKeyDown(keyCode, event)
-    }
     override fun onStart() {
         val intentFilter = IntentFilter("STOP_MUSIC_ACTION")
         registerReceiver(stopMusicReceiver, intentFilter)
@@ -103,8 +88,9 @@ class MainActivity : AppCompatActivity() {
         registerReceiver(stopStartMusicReceiver, intentFilter3)
 
 
-        val startIntent = Intent(this@MainActivity, BluetoothControlService::class.java)
-        startService(startIntent)
+       val startIntentMedia = Intent(this@MainActivity, MediaPlaybackService::class.java)
+       startService(startIntentMedia)
+
 
         if(donnesVM.isPlaying){
             val button = findViewById<Button>(R.id.button)
@@ -118,6 +104,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onCreate(savedInstanceState: Bundle?) {
         Preferences[this]!!.applyTheme()
         super.onCreate(savedInstanceState)
@@ -240,8 +227,8 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "ffmpeg not supported")
             reportPlaybackUnsupported()
         }
-    }
 
+    }
 
     private fun checkPermissions() {
         val permissionsToRequest = mutableListOf<String>()
