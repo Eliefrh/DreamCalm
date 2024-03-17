@@ -12,6 +12,7 @@ import android.media.AudioManager
 import android.media.session.MediaSession
 import android.os.Build
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -24,6 +25,7 @@ import android.widget.Button
 import android.widget.GridView
 import android.widget.ImageView
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
@@ -54,7 +56,10 @@ class MainActivity : AppCompatActivity() {
     lateinit var soundItems: List<SoundItem>
     private var isUserSelection = false
     private lateinit var mediaSession: MediaSession
-
+    private var countDownTimer: CountDownTimer? = null
+    var countdownDuration = 60 * 1000L
+    var timeLeftInMillis: Long = 0
+    var frequenceChanged: Boolean = false
 
     // Déclaration de constantes pour les permissions
     private val REQUEST_PERMISSION_CODE = 123
@@ -63,6 +68,7 @@ class MainActivity : AppCompatActivity() {
 
     private val stopMusicReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+            frequenceChanged = true
             if (donnesVM.isPlaying) {
                 stopPlayback()
                 startPlayback()
@@ -120,23 +126,6 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Bluetooth is not supported on this device", Toast.LENGTH_SHORT).show()
         }
 
-        // Observe the remaining time
-        donnesVM.remainingTime.observe(this) { remainingTime ->
-            if (donnesVM.isPlaying && !donnesVM.timerDisabled && remainingTime != null && remainingTime <= 0) {
-               Log.d("yessi","stops the timer observer")
-                stopPlayback()
-            }
-        }
-
-        // Start or restart the timer with remaining time
-        if (!donnesVM.timerDisabled && savedInstanceState != null) {
-            val remainingTime = savedInstanceState.getLong("remainingTime")
-            donnesVM.startTimer(remainingTime)
-        }
-
-
-
-
         initializeApp()
 
         val gridView = findViewById<GridView>(R.id.gridView)
@@ -162,7 +151,6 @@ class MainActivity : AppCompatActivity() {
                 position: Int,
                 id: Long
             ) {
-                Log.d("yessi","ispaying${donnesVM.isPlaying.toString()}, itemselected${donnesVM.itemSelected.toString()}, userselected${isUserSelection.toString()}")
                 if (donnesVM.isPlaying && donnesVM.itemSelected && isUserSelection) {
                     updatePlayTimeout()
                     Toast.makeText(this@MainActivity, R.string.sleepTimerUpdated, Toast.LENGTH_LONG)
@@ -180,8 +168,6 @@ class MainActivity : AppCompatActivity() {
         }
         // Set onTouchListener to track user interaction
         sleepTimeoutSpinner.setOnTouchListener { _, _ ->
-            Toast.makeText(this@MainActivity,"yesyes", Toast.LENGTH_LONG)
-                .show()
             isUserSelection = true  // Set the flag when the user interacts with the spinner
             false  // Return false to indicate that touch event is not consumed
         }
@@ -199,6 +185,7 @@ class MainActivity : AppCompatActivity() {
             if (!donnesVM.isPlaying) {
                 startPlayback()
             } else {
+                countDownTimer?.onFinish()
                 stopPlayback()
             }
         }
@@ -228,8 +215,32 @@ class MainActivity : AppCompatActivity() {
             reportPlaybackUnsupported()
         }
 
+
+
     }
 
+    private fun initilLizeCountDownTimer(countdownDuration: Long) {
+        // Set countdown duration (10 minutes in milliseconds)
+        val sleepTimeoutSpinner = findViewById<Spinner>(R.id.sleepTimerSpinner)
+        countDownTimer = object : CountDownTimer(countdownDuration, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                    timeLeftInMillis = millisUntilFinished
+                    val hours = (millisUntilFinished / (1000 * 60 * 60)) % 24
+                    val minutes = (millisUntilFinished / (1000 * 60)) % 60
+                    val seconds = (millisUntilFinished / 1000) % 60
+                    val timeLeftFormatted = String.format("%02d:%02d:%02d", hours, minutes, seconds)
+                    val selectedView = sleepTimeoutSpinner.selectedView as? TextView
+                    selectedView?.text = timeLeftFormatted
+                }
+
+            override fun onFinish() {
+                val selectedView = sleepTimeoutSpinner.selectedView as? TextView
+                selectedView?.text = sleepTimeoutSpinner.selectedItem.toString()
+                stopPlayback()
+                countDownTimer?.cancel()
+            }
+        }
+    }
     private fun checkPermissions() {
         val permissionsToRequest = mutableListOf<String>()
         if (permissionsToRequest.isNotEmpty()) {
@@ -448,33 +459,20 @@ class MainActivity : AppCompatActivity() {
      */
     private fun updatePlayTimeout() {
         // Cancel the running timer
-        Log.d("yessi",donnesVM.timerDisabled.toString())
-        if (donnesVM.timer != null && !donnesVM.timerDisabled) {
-            donnesVM.stopTimer(true)
-            /** _timer!!.cancel()
-            _timer!!.purge()**/
-        }
+        // Start the countdown timer
 
         val sleepTimeoutSpinner = findViewById<Spinner>(R.id.sleepTimerSpinner)
         val selectedTimeout = sleepTimeoutSpinner.selectedItem as String
         val timeoutMs = _timeMap!![selectedTimeout]!!
-        if (timeoutMs > 0) {
-            Log.d("yessi",timeoutMs.toString())
-            donnesVM.startTimer(timeoutMs.toLong())
+        if(timeoutMs>0){
+        countDownTimer?.cancel()
+        initilLizeCountDownTimer(timeoutMs.toLong())
+        countDownTimer?.start()
             donnesVM.timerDisabled = false
-        }else{
+    }else{
+            countDownTimer?.cancel()
             donnesVM.timerDisabled = true
         }
-        /**
-        if (timeoutMs > 0) {
-            _timer = Timer()
-            _timer!!.schedule(object : TimerTask() {
-                override fun run() {
-
-                    stopPlayback()
-                }
-            }, timeoutMs.toLong())
-        }**/
     }
 
     /**
@@ -483,7 +481,10 @@ class MainActivity : AppCompatActivity() {
     private fun updateToPlaying() {
         donnesVM.isPlaying = true
         runOnUiThread {
-            updatePlayTimeout()
+            if(!frequenceChanged){
+            updatePlayTimeout()}else{
+                frequenceChanged = false
+            }
             val button = findViewById<Button>(R.id.button)
             button.setText(R.string.stop)
             setControlsEnabled(false)
@@ -500,14 +501,6 @@ class MainActivity : AppCompatActivity() {
         startService(stopIntent)
         donnesVM.isPlaying = false
 
-        if (donnesVM.timer  != null && !donnesVM.timerDisabled) {
-            Log.d("yessi","stops the timer")
-            /**_timer!!.cancel()
-            _timer!!.purge()
-            _timer = null**/
-
-            donnesVM.stopTimer()
-        }
         runOnUiThread {
             val button = findViewById<Button>(R.id.button)
             button.setText(R.string.play)
@@ -525,7 +518,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         donnesVM.itemSelected = false
-
         if (!isChangingConfigurations) {
             if (donnesVM.isPlaying) {
                 stopPlayback()
@@ -541,7 +533,6 @@ class MainActivity : AppCompatActivity() {
             }
 
         }
-        donnesVM.stopTimer()
         unregisterReceiver(stopMusicReceiver)
         unregisterReceiver(stopStartMusicReceiver)
         super.onDestroy()
@@ -555,6 +546,8 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
         if (id == R.id.action_settings) {
+            countDownTimer?.cancel()
+            donnesVM.timeLeftInMillis = timeLeftInMillis
             startActivity(Intent(this, SettingsActivity::class.java))
             return true
         } else if (id == R.id.action_about) {
@@ -662,15 +655,21 @@ class MainActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         // Save the remaining time when the activity is destroyed
-        // Save the remaining time when the activity is destroyed
-        if(!donnesVM.timerDisabled && donnesVM.isPlaying){
-        donnesVM.calculateAndUpdateRemainingTime()
-        donnesVM.remainingTime.value?.let {
+        donnesVM.timeLeftInMillis = timeLeftInMillis
+    }
 
-            outState.putLong("remainingTime", it)
-        }}
-        }
+    override fun onResume() {
+        super.onResume()
+        if(donnesVM.isPlaying && !donnesVM.timerDisabled){
+        initilLizeCountDownTimer(donnesVM.timeLeftInMillis)
+            countDownTimer?.start()
+    }}
 
+    override fun onPause() {
+        super.onPause()
+        Log.d("narges", "onPause")
+        countDownTimer?.cancel()
+    }
 
     companion object {
         private const val TAG = "BabySleepSounds"
