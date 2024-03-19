@@ -1,12 +1,16 @@
 package protect.babysleepsounds
 
+import android.Manifest
 import android.app.ProgressDialog
+import android.bluetooth.BluetoothAdapter
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.media.AudioManager
+import android.media.session.MediaSession
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -21,9 +25,12 @@ import android.widget.GridView
 import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
 import com.google.common.collect.ImmutableMap
 import nl.bravobit.ffmpeg.ExecuteBinaryResponseHandler
 import nl.bravobit.ffmpeg.FFmpeg
@@ -33,43 +40,41 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.util.Calendar
 import java.util.LinkedList
-import java.util.Timer
-import java.util.TimerTask
-import android.Manifest
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 
 data class SoundItem(val imageResId: Int)
 
+
 class MainActivity : AppCompatActivity() {
+    val donnesVM: MainActivityViewModel by viewModels()
     private var _soundMap: Map<Int, Int>? = null
     private var _timeMap: Map<String, Int>? = null
-    private var _playing = false
-    private var _timer: Timer? = null
     private var _ffmpeg: FFmpeg? = null
     private var _encodingProgress: ProgressDialog? = null
-    private var selectedPosition: Int = -1
+    private var bluetoothAdapter: BluetoothAdapter? = null
     lateinit var soundItems: List<SoundItem>
+    private var isUserSelection = false
+    private lateinit var mediaSession: MediaSession
 
 
     // Déclaration de constantes pour les permissions
     private val REQUEST_PERMISSION_CODE = 123
     private val PERMISSIONS_REQUIRED = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
-    //pour recevoir message d une activity ouvert avec intent ne marche pas vu qu activity va etre fini
-    /**private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-    if (result.resultCode == Activity.RESULT_OK) {
-    var intent = result.data ?: Intent()
-    if (intent.hasExtra("appliquer")) {
-    Log.d("soso","marche")
-    }
-    }
-    }**/
 
     private val stopMusicReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (_playing) {
+            if (donnesVM.isPlaying) {
                 stopPlayback()
+                startPlayback()
+            }
+        }
+    }
+
+    private val stopStartMusicReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (donnesVM.isPlaying) {
+                stopPlayback()
+            }else{
                 startPlayback()
             }
         }
@@ -78,9 +83,28 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         val intentFilter = IntentFilter("STOP_MUSIC_ACTION")
         registerReceiver(stopMusicReceiver, intentFilter)
+
+        val intentFilter3 = IntentFilter("STOP_START_MUSIC")
+        registerReceiver(stopStartMusicReceiver, intentFilter3)
+
+
+       val startIntentMedia = Intent(this@MainActivity, MediaPlaybackService::class.java)
+       startService(startIntentMedia)
+
+
+        if(donnesVM.isPlaying){
+            val button = findViewById<Button>(R.id.button)
+            button.setText(R.string.stop)
+            setControlsEnabled(false)
+
+        }
+
         super.onStart()
     }
 
+
+
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onCreate(savedInstanceState: Bundle?) {
         Preferences[this]!!.applyTheme()
         super.onCreate(savedInstanceState)
@@ -88,6 +112,30 @@ class MainActivity : AppCompatActivity() {
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         checkPermissions()
+
+        // Initialize BluetoothAdapter
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+        if (bluetoothAdapter == null) {
+            // Device doesn't support Bluetooth
+            Toast.makeText(this, "Bluetooth is not supported on this device", Toast.LENGTH_SHORT).show()
+        }
+
+        // Observe the remaining time
+        donnesVM.remainingTime.observe(this) { remainingTime ->
+            if (donnesVM.isPlaying && !donnesVM.timerDisabled && remainingTime != null && remainingTime <= 0) {
+               Log.d("yessi","stops the timer observer")
+                stopPlayback()
+            }
+        }
+
+        // Start or restart the timer with remaining time
+        if (!donnesVM.timerDisabled && savedInstanceState != null) {
+            val remainingTime = savedInstanceState.getLong("remainingTime")
+            donnesVM.startTimer(remainingTime)
+        }
+
+
+
 
         initializeApp()
 
@@ -99,10 +147,12 @@ class MainActivity : AppCompatActivity() {
 
         gridView.setOnItemClickListener { parent, view, position, id ->
             // Store the selected position in a variable
-            selectedPosition = position
+            donnesVM.selectedImageposition= position
             playingMusicImg.setImageResource(soundItems[position].imageResId)
         }
-
+        if(donnesVM.selectedImageposition != null){
+            playingMusicImg.setImageResource(soundItems[donnesVM.selectedImageposition!!].imageResId)
+        }
         val sleepTimeoutSpinner = findViewById<Spinner>(R.id.sleepTimerSpinner)
         val times: List<String> = _timeMap?.keys?.toList() ?: emptyList()
         sleepTimeoutSpinner.onItemSelectedListener = object : OnItemSelectedListener {
@@ -112,10 +162,14 @@ class MainActivity : AppCompatActivity() {
                 position: Int,
                 id: Long
             ) {
-                if (_playing) {
+                Log.d("yessi","ispaying${donnesVM.isPlaying.toString()}, itemselected${donnesVM.itemSelected.toString()}, userselected${isUserSelection.toString()}")
+                if (donnesVM.isPlaying && donnesVM.itemSelected && isUserSelection) {
                     updatePlayTimeout()
                     Toast.makeText(this@MainActivity, R.string.sleepTimerUpdated, Toast.LENGTH_LONG)
                         .show()
+                    isUserSelection = false
+                }else if(!donnesVM.itemSelected){
+                    donnesVM.itemSelected = true
                 }
             }
 
@@ -123,6 +177,13 @@ class MainActivity : AppCompatActivity() {
                 // noop
             }
 
+        }
+        // Set onTouchListener to track user interaction
+        sleepTimeoutSpinner.setOnTouchListener { _, _ ->
+            Toast.makeText(this@MainActivity,"yesyes", Toast.LENGTH_LONG)
+                .show()
+            isUserSelection = true  // Set the flag when the user interacts with the spinner
+            false  // Return false to indicate that touch event is not consumed
         }
         val timesAdapter = ArrayAdapter(
             this,
@@ -135,7 +196,7 @@ class MainActivity : AppCompatActivity() {
 
         val button = findViewById<Button>(R.id.button)
         button.setOnClickListener {
-            if (_playing == false) {
+            if (!donnesVM.isPlaying) {
                 startPlayback()
             } else {
                 stopPlayback()
@@ -166,8 +227,8 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "ffmpeg not supported")
             reportPlaybackUnsupported()
         }
-    }
 
+    }
 
     private fun checkPermissions() {
         val permissionsToRequest = mutableListOf<String>()
@@ -260,9 +321,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun startPlayback() {
 
-        val selectedPosition = this.selectedPosition
+        val selectedPosition = donnesVM.selectedImageposition
         //check if its a valid selection
-        if (selectedPosition != -1 && selectedPosition < soundItems.size) {
+        if (selectedPosition != null && selectedPosition != -1 && selectedPosition!! < soundItems.size) {
             val selectedSoundItem = soundItems[selectedPosition]
             val selectedSound = selectedSoundItem.imageResId
             Log.d("Elie", selectedSound.toString())
@@ -387,28 +448,40 @@ class MainActivity : AppCompatActivity() {
      */
     private fun updatePlayTimeout() {
         // Cancel the running timer
-        if (_timer != null) {
-            _timer!!.cancel()
-            _timer!!.purge()
+        Log.d("yessi",donnesVM.timerDisabled.toString())
+        if (donnesVM.timer != null && !donnesVM.timerDisabled) {
+            donnesVM.stopTimer(true)
+            /** _timer!!.cancel()
+            _timer!!.purge()**/
         }
+
         val sleepTimeoutSpinner = findViewById<Spinner>(R.id.sleepTimerSpinner)
         val selectedTimeout = sleepTimeoutSpinner.selectedItem as String
         val timeoutMs = _timeMap!![selectedTimeout]!!
         if (timeoutMs > 0) {
+            Log.d("yessi",timeoutMs.toString())
+            donnesVM.startTimer(timeoutMs.toLong())
+            donnesVM.timerDisabled = false
+        }else{
+            donnesVM.timerDisabled = true
+        }
+        /**
+        if (timeoutMs > 0) {
             _timer = Timer()
             _timer!!.schedule(object : TimerTask() {
                 override fun run() {
+
                     stopPlayback()
                 }
             }, timeoutMs.toLong())
-        }
+        }**/
     }
 
     /**
      * Update the UI to reflect it is playing
      */
     private fun updateToPlaying() {
-        _playing = true
+        donnesVM.isPlaying = true
         runOnUiThread {
             updatePlayTimeout()
             val button = findViewById<Button>(R.id.button)
@@ -422,13 +495,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun stopPlayback() {
+
         val stopIntent = Intent(this@MainActivity, AudioService::class.java)
         startService(stopIntent)
-        _playing = false
-        if (_timer != null) {
-            _timer!!.cancel()
+        donnesVM.isPlaying = false
+
+        if (donnesVM.timer  != null && !donnesVM.timerDisabled) {
+            Log.d("yessi","stops the timer")
+            /**_timer!!.cancel()
             _timer!!.purge()
-            _timer = null
+            _timer = null**/
+
+            donnesVM.stopTimer()
         }
         runOnUiThread {
             val button = findViewById<Button>(R.id.button)
@@ -436,6 +514,7 @@ class MainActivity : AppCompatActivity() {
             setControlsEnabled(true)
         }
     }
+
 
     private fun setControlsEnabled(enabled: Boolean) {
         for (resId in intArrayOf(R.id.gridView)) {
@@ -445,18 +524,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        if (_playing) {
-            stopPlayback()
-        }
-        for (toDelete in arrayOf(ORIGINAL_MP3_FILE, PROCESSED_RAW_FILE)) {
+        donnesVM.itemSelected = false
+
+        if (!isChangingConfigurations) {
+            if (donnesVM.isPlaying) {
+                stopPlayback()
+            }
+            for (toDelete in arrayOf(ORIGINAL_MP3_FILE, PROCESSED_RAW_FILE)) {
             val file = File(filesDir, toDelete)
             if (file.exists()) { // Check if the file exists before deleting
-                val result = file.delete()
-                if (!result) {
-                    Log.w(TAG, "Failed to delete file on exit: " + file.absolutePath)
-                }
+            val result = file.delete()
+            if (!result) {
+            Log.w(TAG, "Failed to delete file on exit: " + file.absolutePath)
             }
+            }
+            }
+
         }
+        donnesVM.stopTimer()
+        unregisterReceiver(stopMusicReceiver)
+        unregisterReceiver(stopStartMusicReceiver)
         super.onDestroy()
     }
 
@@ -567,9 +654,22 @@ class MainActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setView(wv)
             .setCancelable(true)
-            .setPositiveButton(R.string.ok) { dialog, which -> dialog.dismiss() }
+            .setPositiveButton(R.string.ok) { dialog, _ -> dialog.dismiss() }
             .show()
     }
+
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        // Save the remaining time when the activity is destroyed
+        // Save the remaining time when the activity is destroyed
+        if(!donnesVM.timerDisabled && donnesVM.isPlaying){
+        donnesVM.calculateAndUpdateRemainingTime()
+        donnesVM.remainingTime.value?.let {
+
+            outState.putLong("remainingTime", it)
+        }}
+        }
 
 
     companion object {
