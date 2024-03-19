@@ -12,7 +12,6 @@ import android.media.AudioManager
 import android.media.session.MediaSession
 import android.os.Build
 import android.os.Bundle
-import android.os.CountDownTimer
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -56,10 +55,10 @@ class MainActivity : AppCompatActivity() {
     lateinit var soundItems: List<SoundItem>
     private var isUserSelection = false
     private lateinit var mediaSession: MediaSession
-    private var countDownTimer: CountDownTimer? = null
     var countdownDuration = 60 * 1000L
     var timeLeftInMillis: Long = 0
-    var frequenceChanged: Boolean = false
+    lateinit var sleepTimeoutSpinner : Spinner
+
 
     // Déclaration de constantes pour les permissions
     private val REQUEST_PERMISSION_CODE = 123
@@ -68,8 +67,8 @@ class MainActivity : AppCompatActivity() {
 
     private val stopMusicReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            frequenceChanged = true
             if (donnesVM.isPlaying) {
+                donnesVM.frequenceChanged = true
                 stopPlayback()
                 startPlayback()
             }
@@ -86,6 +85,21 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private val timerUpdateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val selectedView = sleepTimeoutSpinner.selectedView as? TextView
+            if (intent != null) {
+                selectedView?.text = intent.getStringExtra("timeLeftFormatted")
+            }
+        }
+    }
+    private val timerFinishReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val selectedView = sleepTimeoutSpinner.selectedView as? TextView
+            selectedView?.text = sleepTimeoutSpinner.selectedItem.toString()
+            stopPlayback()
+        }
+    }
     override fun onStart() {
         val intentFilter = IntentFilter("STOP_MUSIC_ACTION")
         registerReceiver(stopMusicReceiver, intentFilter)
@@ -93,7 +107,8 @@ class MainActivity : AppCompatActivity() {
         val intentFilter3 = IntentFilter("STOP_START_MUSIC")
         registerReceiver(stopStartMusicReceiver, intentFilter3)
 
-
+        registerReceiver(timerUpdateReceiver, IntentFilter("TIMER_UPDATE"))
+        registerReceiver(timerFinishReceiver, IntentFilter("TIMER_FINISH"))
        val startIntentMedia = Intent(this@MainActivity, MediaPlaybackService::class.java)
        startService(startIntentMedia)
 
@@ -118,6 +133,7 @@ class MainActivity : AppCompatActivity() {
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         checkPermissions()
+        sleepTimeoutSpinner = findViewById(R.id.sleepTimerSpinner)
 
         // Initialize BluetoothAdapter
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
@@ -185,7 +201,7 @@ class MainActivity : AppCompatActivity() {
             if (!donnesVM.isPlaying) {
                 startPlayback()
             } else {
-                countDownTimer?.onFinish()
+
                 stopPlayback()
             }
         }
@@ -219,28 +235,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun initilLizeCountDownTimer(countdownDuration: Long) {
-        // Set countdown duration (10 minutes in milliseconds)
-        val sleepTimeoutSpinner = findViewById<Spinner>(R.id.sleepTimerSpinner)
-        countDownTimer = object : CountDownTimer(countdownDuration, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                    timeLeftInMillis = millisUntilFinished
-                    val hours = (millisUntilFinished / (1000 * 60 * 60)) % 24
-                    val minutes = (millisUntilFinished / (1000 * 60)) % 60
-                    val seconds = (millisUntilFinished / 1000) % 60
-                    val timeLeftFormatted = String.format("%02d:%02d:%02d", hours, minutes, seconds)
-                    val selectedView = sleepTimeoutSpinner.selectedView as? TextView
-                    selectedView?.text = timeLeftFormatted
-                }
 
-            override fun onFinish() {
-                val selectedView = sleepTimeoutSpinner.selectedView as? TextView
-                selectedView?.text = sleepTimeoutSpinner.selectedItem.toString()
-                stopPlayback()
-                countDownTimer?.cancel()
-            }
-        }
-    }
     private fun checkPermissions() {
         val permissionsToRequest = mutableListOf<String>()
         if (permissionsToRequest.isNotEmpty()) {
@@ -464,14 +459,21 @@ class MainActivity : AppCompatActivity() {
         val sleepTimeoutSpinner = findViewById<Spinner>(R.id.sleepTimerSpinner)
         val selectedTimeout = sleepTimeoutSpinner.selectedItem as String
         val timeoutMs = _timeMap!![selectedTimeout]!!
-        if(timeoutMs>0){
-        countDownTimer?.cancel()
-        initilLizeCountDownTimer(timeoutMs.toLong())
-        countDownTimer?.start()
-            donnesVM.timerDisabled = false
-    }else{
-            countDownTimer?.cancel()
-            donnesVM.timerDisabled = true
+        if(timeoutMs>0 && !donnesVM.frequenceChanged){
+            val serviceTimerChanged = Intent(this@MainActivity, TimerService::class.java)
+            serviceTimerChanged.putExtra("timerchanged", true)
+            startService(serviceTimerChanged)
+
+            val serviceIntent = Intent(this@MainActivity, TimerService::class.java)
+            serviceIntent.putExtra("countdownDuration", timeoutMs)
+            startService(serviceIntent)
+    }else if(donnesVM.frequenceChanged){
+            donnesVM.frequenceChanged = false
+    } else{
+            val serviceTimerChanged = Intent(this@MainActivity, TimerService::class.java)
+            serviceTimerChanged.putExtra("timerchanged", true)
+            serviceTimerChanged.putExtra("timerDisabled", true)
+            startService(serviceTimerChanged)
         }
     }
 
@@ -481,9 +483,9 @@ class MainActivity : AppCompatActivity() {
     private fun updateToPlaying() {
         donnesVM.isPlaying = true
         runOnUiThread {
-            if(!frequenceChanged){
+            if(!donnesVM.frequenceChanged){
             updatePlayTimeout()}else{
-                frequenceChanged = false
+                donnesVM.frequenceChanged = false
             }
             val button = findViewById<Button>(R.id.button)
             button.setText(R.string.stop)
@@ -496,7 +498,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun stopPlayback() {
-
+        if(!donnesVM.frequenceChanged) {
+            val serviceTimerStop = Intent(this@MainActivity, TimerService::class.java)
+            startService(serviceTimerStop)
+        }
         val stopIntent = Intent(this@MainActivity, AudioService::class.java)
         startService(stopIntent)
         donnesVM.isPlaying = false
@@ -546,8 +551,6 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
         if (id == R.id.action_settings) {
-            countDownTimer?.cancel()
-            donnesVM.timeLeftInMillis = timeLeftInMillis
             startActivity(Intent(this, SettingsActivity::class.java))
             return true
         } else if (id == R.id.action_about) {
@@ -651,25 +654,6 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        // Save the remaining time when the activity is destroyed
-        donnesVM.timeLeftInMillis = timeLeftInMillis
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if(donnesVM.isPlaying && !donnesVM.timerDisabled){
-        initilLizeCountDownTimer(donnesVM.timeLeftInMillis)
-            countDownTimer?.start()
-    }}
-
-    override fun onPause() {
-        super.onPause()
-        Log.d("narges", "onPause")
-        countDownTimer?.cancel()
-    }
 
     companion object {
         private const val TAG = "BabySleepSounds"
