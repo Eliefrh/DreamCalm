@@ -9,7 +9,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.media.AudioManager
+import android.media.MediaPlayer
 import android.media.session.MediaSession
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -55,6 +57,8 @@ class MainActivity : AppCompatActivity() {
     private var isUserSelection = false
     private lateinit var mediaSession: MediaSession
 
+    private var mediaPlayer: MediaPlayer? = null
+
 
     // Déclaration de constantes pour les permissions
     private val REQUEST_PERMISSION_CODE = 123
@@ -72,12 +76,21 @@ class MainActivity : AppCompatActivity() {
 
     private val stopStartMusicReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (donnesVM.isPlaying) {
-                stopPlayback()
-            }else{
-                startPlayback()
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+
+                if (donnesVM.isPlaying) {
+                    stopPlayback()
+                } else {
+                    startPlayback()
+                }
+            } else {
+                mediaPlayer?.release()
+                mediaPlayer = MediaPlayer.create(applicationContext, R.raw.campfire)
+                mediaPlayer?.start()
             }
+
         }
+
     }
 
     override fun onStart() {
@@ -88,11 +101,11 @@ class MainActivity : AppCompatActivity() {
         registerReceiver(stopStartMusicReceiver, intentFilter3)
 
 
-       val startIntentMedia = Intent(this@MainActivity, MediaPlaybackService::class.java)
-       startService(startIntentMedia)
+        val startIntentMedia = Intent(this@MainActivity, MediaPlaybackService::class.java)
+        startService(startIntentMedia)
 
 
-        if(donnesVM.isPlaying){
+        if (donnesVM.isPlaying) {
             val button = findViewById<Button>(R.id.button)
             button.setText(R.string.stop)
             setControlsEnabled(false)
@@ -101,7 +114,6 @@ class MainActivity : AppCompatActivity() {
 
         super.onStart()
     }
-
 
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -117,13 +129,14 @@ class MainActivity : AppCompatActivity() {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         if (bluetoothAdapter == null) {
             // Device doesn't support Bluetooth
-            Toast.makeText(this, "Bluetooth is not supported on this device", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Bluetooth is not supported on this device", Toast.LENGTH_SHORT)
+                .show()
         }
 
         // Observe the remaining time
         donnesVM.remainingTime.observe(this) { remainingTime ->
             if (donnesVM.isPlaying && !donnesVM.timerDisabled && remainingTime != null && remainingTime <= 0) {
-               Log.d("yessi","stops the timer observer")
+                Log.d("yessi", "stops the timer observer")
                 stopPlayback()
             }
         }
@@ -147,10 +160,10 @@ class MainActivity : AppCompatActivity() {
 
         gridView.setOnItemClickListener { parent, view, position, id ->
             // Store the selected position in a variable
-            donnesVM.selectedImageposition= position
+            donnesVM.selectedImageposition = position
             playingMusicImg.setImageResource(soundItems[position].imageResId)
         }
-        if(donnesVM.selectedImageposition != null){
+        if (donnesVM.selectedImageposition != null) {
             playingMusicImg.setImageResource(soundItems[donnesVM.selectedImageposition!!].imageResId)
         }
         val sleepTimeoutSpinner = findViewById<Spinner>(R.id.sleepTimerSpinner)
@@ -162,13 +175,16 @@ class MainActivity : AppCompatActivity() {
                 position: Int,
                 id: Long
             ) {
-                Log.d("yessi","ispaying${donnesVM.isPlaying.toString()}, itemselected${donnesVM.itemSelected.toString()}, userselected${isUserSelection.toString()}")
+                Log.d(
+                    "yessi",
+                    "ispaying${donnesVM.isPlaying.toString()}, itemselected${donnesVM.itemSelected.toString()}, userselected${isUserSelection.toString()}"
+                )
                 if (donnesVM.isPlaying && donnesVM.itemSelected && isUserSelection) {
                     updatePlayTimeout()
                     Toast.makeText(this@MainActivity, R.string.sleepTimerUpdated, Toast.LENGTH_LONG)
                         .show()
                     isUserSelection = false
-                }else if(!donnesVM.itemSelected){
+                } else if (!donnesVM.itemSelected) {
                     donnesVM.itemSelected = true
                 }
             }
@@ -180,7 +196,7 @@ class MainActivity : AppCompatActivity() {
         }
         // Set onTouchListener to track user interaction
         sleepTimeoutSpinner.setOnTouchListener { _, _ ->
-            Toast.makeText(this@MainActivity,"yesyes", Toast.LENGTH_LONG)
+            Toast.makeText(this@MainActivity, "yesyes", Toast.LENGTH_LONG)
                 .show()
             isUserSelection = true  // Set the flag when the user interacts with the spinner
             false  // Return false to indicate that touch event is not consumed
@@ -196,11 +212,18 @@ class MainActivity : AppCompatActivity() {
 
         val button = findViewById<Button>(R.id.button)
         button.setOnClickListener {
+//            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+
             if (!donnesVM.isPlaying) {
                 startPlayback()
             } else {
                 stopPlayback()
             }
+//            } else {
+//                mediaPlayer?.release()
+//                mediaPlayer = MediaPlayer.create(applicationContext, R.raw.campfire)
+//                mediaPlayer?.start()
+//            }
         }
         _ffmpeg = FFmpeg.getInstance(this)
         File(filesDir, "ffmpeg").setExecutable(true)
@@ -320,34 +343,29 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startPlayback() {
-
         val selectedPosition = donnesVM.selectedImageposition
-        //check if its a valid selection
-        if (selectedPosition != null && selectedPosition != -1 && selectedPosition!! < soundItems.size) {
+        // Check if it's a valid selection
+        if (selectedPosition != null && selectedPosition != -1 && selectedPosition < soundItems.size) {
             val selectedSoundItem = soundItems[selectedPosition]
             val selectedSound = selectedSoundItem.imageResId
-            Log.d("Elie", selectedSound.toString())
             val id = _soundMap!![selectedSound]!!
-            volumeControlStream = AudioManager.STREAM_MUSIC
-            try {
-                // Replace the following line to use getExternalFilesDir()
-                val originalFile = File(getExternalFilesDir(null), ORIGINAL_MP3_FILE)
-                Log.i(TAG, "Writing file out prior to WAV conversion")
+
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+                // Use existing code for Android 10 and below
+                val originalFile = File(getExternalFilesDir(null), "$selectedSound.mp3")
                 writeToFile(id, originalFile)
-                val processed = File(filesDir, PROCESSED_RAW_FILE)
+                val processed = File(filesDir, "$selectedSound.raw")
                 if (processed.exists()) {
                     val result = processed.delete()
                     if (!result) {
                         throw IOException("Unable to delete previous file, cannot prepare new file")
                     }
                 }
-                Log.i(TAG, "Converting file to WAV")
                 val arguments = LinkedList<String>()
                 arguments.add("-i")
                 arguments.add(originalFile.absolutePath)
                 if (Preferences[this]!!.isLowPassFilterEnabled) {
                     val frequencyValue = Preferences[this]!!.lowPassFilterFrequency
-                    Log.i(TAG, "Will perform lowpass filter to $frequencyValue Hz")
                     arguments.add("-af")
                     arguments.add("lowpass=frequency=$frequencyValue")
                 }
@@ -360,7 +378,6 @@ class MainActivity : AppCompatActivity() {
                 _encodingProgress = ProgressDialog(this)
                 _encodingProgress!!.setMessage(getString(R.string.preparing))
                 _encodingProgress!!.show()
-                Log.i(TAG, "Launching ffmpeg")
                 val cmd = arguments.toTypedArray()
                 _ffmpeg!!.execute(cmd, object : ExecuteBinaryResponseHandler() {
                     override fun onStart() {
@@ -391,14 +408,23 @@ class MainActivity : AppCompatActivity() {
                         Log.d(TAG, "ffmpeg execute onFinish()")
                     }
                 })
-            } catch (e: IOException) {
-                Log.i(TAG, "Failed to start playback", e)
-                reportPlaybackFailure()
-            } catch (e: FFmpegCommandAlreadyRunningException) {
-                Log.i(TAG, "Failed to start playback", e)
-                reportPlaybackFailure()
+            } else {
+                // Use MediaPlayer for Android 11 and above
+                if (mediaPlayer == null) {
+                    mediaPlayer = MediaPlayer.create(applicationContext, id)
+                    mediaPlayer?.isLooping = true // Set looping to true
+                    mediaPlayer?.setOnCompletionListener {
+                        // Restart the playback when it completes
+                        mediaPlayer?.start()
+                    }
+                } else {
+                    mediaPlayer?.reset()
+                    mediaPlayer?.setDataSource(applicationContext, Uri.parse("android.resource://$packageName/$id"))
+                    mediaPlayer?.prepare()
+                }
+                mediaPlayer?.start()
+                updateToPlaying()
             }
-
         } else {
             // Handle the case when no item is selected
             Toast.makeText(this, "Please select a sound first", Toast.LENGTH_SHORT).show()
@@ -448,7 +474,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun updatePlayTimeout() {
         // Cancel the running timer
-        Log.d("yessi",donnesVM.timerDisabled.toString())
+        Log.d("yessi", donnesVM.timerDisabled.toString())
         if (donnesVM.timer != null && !donnesVM.timerDisabled) {
             donnesVM.stopTimer(true)
             /** _timer!!.cancel()
@@ -459,21 +485,21 @@ class MainActivity : AppCompatActivity() {
         val selectedTimeout = sleepTimeoutSpinner.selectedItem as String
         val timeoutMs = _timeMap!![selectedTimeout]!!
         if (timeoutMs > 0) {
-            Log.d("yessi",timeoutMs.toString())
+            Log.d("yessi", timeoutMs.toString())
             donnesVM.startTimer(timeoutMs.toLong())
             donnesVM.timerDisabled = false
-        }else{
+        } else {
             donnesVM.timerDisabled = true
         }
         /**
         if (timeoutMs > 0) {
-            _timer = Timer()
-            _timer!!.schedule(object : TimerTask() {
-                override fun run() {
+        _timer = Timer()
+        _timer!!.schedule(object : TimerTask() {
+        override fun run() {
 
-                    stopPlayback()
-                }
-            }, timeoutMs.toLong())
+        stopPlayback()
+        }
+        }, timeoutMs.toLong())
         }**/
     }
 
@@ -500,8 +526,8 @@ class MainActivity : AppCompatActivity() {
         startService(stopIntent)
         donnesVM.isPlaying = false
 
-        if (donnesVM.timer  != null && !donnesVM.timerDisabled) {
-            Log.d("yessi","stops the timer")
+        if (donnesVM.timer != null && !donnesVM.timerDisabled) {
+            Log.d("yessi", "stops the timer")
             /**_timer!!.cancel()
             _timer!!.purge()
             _timer = null**/
@@ -513,6 +539,10 @@ class MainActivity : AppCompatActivity() {
             button.setText(R.string.play)
             setControlsEnabled(true)
         }
+        // Stop the MediaPlayer
+        mediaPlayer?.stop()
+        mediaPlayer?.release()
+        mediaPlayer = null
     }
 
 
@@ -531,19 +561,20 @@ class MainActivity : AppCompatActivity() {
                 stopPlayback()
             }
             for (toDelete in arrayOf(ORIGINAL_MP3_FILE, PROCESSED_RAW_FILE)) {
-            val file = File(filesDir, toDelete)
-            if (file.exists()) { // Check if the file exists before deleting
-            val result = file.delete()
-            if (!result) {
-            Log.w(TAG, "Failed to delete file on exit: " + file.absolutePath)
-            }
-            }
+                val file = File(filesDir, toDelete)
+                if (file.exists()) { // Check if the file exists before deleting
+                    val result = file.delete()
+                    if (!result) {
+                        Log.w(TAG, "Failed to delete file on exit: " + file.absolutePath)
+                    }
+                }
             }
 
         }
         donnesVM.stopTimer()
         unregisterReceiver(stopMusicReceiver)
         unregisterReceiver(stopStartMusicReceiver)
+        mediaPlayer?.release()
         super.onDestroy()
     }
 
@@ -663,13 +694,14 @@ class MainActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
         // Save the remaining time when the activity is destroyed
         // Save the remaining time when the activity is destroyed
-        if(!donnesVM.timerDisabled && donnesVM.isPlaying){
-        donnesVM.calculateAndUpdateRemainingTime()
-        donnesVM.remainingTime.value?.let {
+        if (!donnesVM.timerDisabled && donnesVM.isPlaying) {
+            donnesVM.calculateAndUpdateRemainingTime()
+            donnesVM.remainingTime.value?.let {
 
-            outState.putLong("remainingTime", it)
-        }}
+                outState.putLong("remainingTime", it)
+            }
         }
+    }
 
 
     companion object {
