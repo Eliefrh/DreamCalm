@@ -12,13 +12,14 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 
 class TimerService : Service() {
-
+    private lateinit var notificationManager: NotificationManager
     private var countDownTimer: CountDownTimer? = null
     private lateinit var notificationBuilder: NotificationCompat.Builder
 
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+        notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
     }
     private fun createNotificationChannel() {
@@ -42,7 +43,7 @@ class TimerService : Service() {
             if (intent != null) {
                 stopTimer(intent.getBooleanExtra("timerchanged", false))
                 if(intent.hasExtra("timerDisabled")){
-                    updateNotification("timer disabled")
+                    startForeground(1, createNotification("timer disabled"))
                 }
             }
             }
@@ -104,16 +105,29 @@ class TimerService : Service() {
     }
 
 
-    private fun createNotification(): Notification {
+    private fun createNotification(content:String = "00:00:00"): Notification {
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
             this, 0, notificationIntent,
             PendingIntent.FLAG_IMMUTABLE
         )
+        // Create a pending intent for the Play action
+        val playIntent = Intent(this, AudioService::class.java).apply {
+            action = AudioService.ACTION_PLAY
+        }
+        val playPendingIntent = PendingIntent.getService(this, 0, playIntent,
+            PendingIntent.FLAG_IMMUTABLE)
+
+        // Create a pending intent for the Pause action
+        val pauseIntent = Intent(this, AudioService::class.java).apply {
+            action = AudioService.ACTION_PAUSE
+        }
+        val pausePendingIntent = PendingIntent.getService(this, 0, pauseIntent,
+            PendingIntent.FLAG_IMMUTABLE)
 
         notificationBuilder = NotificationCompat.Builder(this, "timer_channel")
             .setContentTitle(getString(R.string.app_name))
-            .setContentText("00:00:00")
+            .setContentText(content)
             .setSmallIcon(R.drawable.playing_notification)
             .setContentIntent(pendingIntent)
             .setOnlyAlertOnce(true)
