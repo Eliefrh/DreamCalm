@@ -10,4 +10,7 @@
         android:id="@+id/action_about"
         android:title="@string/about"
         app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_add_own"
+        android:title="Add your own" />
 </menu>
