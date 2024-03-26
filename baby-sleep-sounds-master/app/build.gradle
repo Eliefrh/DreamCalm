@@ -58,6 +58,7 @@ dependencies {
     implementation 'protect:android-ffmpeg:release@aar'
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'androidx.activity:activity:1.8.0'
     debugImplementation 'org.hamcrest:hamcrest:2.2'
     //noinspection GradleDependency
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")

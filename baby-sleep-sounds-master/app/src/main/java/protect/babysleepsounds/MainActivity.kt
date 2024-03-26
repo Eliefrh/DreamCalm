@@ -556,6 +556,9 @@ class MainActivity : AppCompatActivity() {
         } else if (id == R.id.action_about) {
             displayAboutDialog()
             return true
+        } else if (id == R.id.action_add_own) {
+            startActivity(Intent(this, RecordingUploadingActivity::class.java))
+            return true
         }
         return super.onOptionsItemSelected(item)
     }
