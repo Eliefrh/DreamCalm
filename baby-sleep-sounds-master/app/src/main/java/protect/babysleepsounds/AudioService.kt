@@ -2,22 +2,15 @@ package protect.babysleepsounds
 
 import android.app.Service
 import android.content.Intent
-import android.media.MediaPlayer
-import android.media.browse.MediaBrowser
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import androidx.annotation.RequiresApi
-import androidx.core.app.NotificationCompat
-import androidx.core.net.toUri
-
 import androidx.core.net.toUri
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
-
 import java.io.File
 
 class AudioService : Service() {
@@ -48,7 +41,6 @@ class AudioService : Service() {
                 }
                 _mediaPlayer = LoopingAudioPlayer(this, File(audioFilename))
                 _mediaPlayer!!.start()
-                setNotification()
             } else {
                 Log.i(TAG, "Received intent to stop playback")
                 if (_mediaPlayer != null) {
