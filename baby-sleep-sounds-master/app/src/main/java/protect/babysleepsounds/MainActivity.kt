@@ -247,11 +247,13 @@ class MainActivity : AppCompatActivity() {
         button.setOnClickListener {
 //            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
 //        if()
+            if (donnesVM.selectedImageposition != null) {
                 if (!donnesVM.isPlaying) {
                     startPlayback()
                 } else {
                     stopPlayback()
                 }
+            }
 //            } else {
 //                mediaPlayer?.release()
 //                mediaPlayer = MediaPlayer.create(applicationContext, R.raw.campfire)
@@ -376,7 +378,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startPlayback() {
-        val selectedPosition = donnesVM.selectedImageposition
+        val selectedPosition = donnesVM?.selectedImageposition
         val selectedSoundItem = soundItems[selectedPosition!!]
         val selectedSound = selectedSoundItem.imageResId
         val id = _soundMap!![selectedSound]!!
@@ -396,7 +398,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 val arguments = LinkedList<String>()
-                             arguments.add("-i")
+                arguments.add("-i")
                 arguments.add(originalFile.absolutePath)
                 if (Preferences[this]!!.isLowPassFilterEnabled) {
                     val frequencyValue = Preferences[this]!!.lowPassFilterFrequency
@@ -509,9 +511,10 @@ class MainActivity : AppCompatActivity() {
                     Intent(this@MainActivity, AudioService::class.java)
                 startIntent.putExtra(
                     AudioService.AUDIO_FILENAME_ARG,
-                    "/storage/emulated/0/Android/data/protect.babysleepsounds/files/" + selectedSound + ".mp3")
-                            startService (startIntent)
-                            updateToPlaying ()
+                    "/storage/emulated/0/Android/data/protect.babysleepsounds/files/" + selectedSound + ".mp3"
+                )
+                startService(startIntent)
+                updateToPlaying()
 //                            }
 //                        })
 //                    } else {
@@ -666,6 +669,7 @@ class MainActivity : AppCompatActivity() {
         mediaPlayer?.stop()
         mediaPlayer?.release()
         mediaPlayer = null
+
     }
 
 
