@@ -31,7 +31,6 @@
         android:id="@+id/uploadingButton"
         android:layout_width="150dp"
         android:layout_height="150dp"
-        android:layout_marginTop="16dp"
         android:background="@color/colorPrimaryPale"
         android:foreground="@drawable/add_music_multimedia_svgrepo_com"
         app:layout_constraintBottom_toTopOf="@+id/descriptionUploading"
@@ -88,9 +87,18 @@
         android:id="@+id/descriptionUploading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
         android:text="Upload a sound"
         android:textColor="#000000"
+        app:layout_constraintBottom_toTopOf="@+id/playSound"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/uploadingButton" />
+
+    <Button
+        android:id="@+id/playSound"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Play"
         app:layout_constraintBottom_toTopOf="@+id/saveFile"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

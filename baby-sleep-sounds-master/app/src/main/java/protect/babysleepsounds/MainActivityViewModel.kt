@@ -7,4 +7,6 @@ class MainActivityViewModel : ViewModel() {
     var isPlaying: Boolean = false
     var itemSelected: Boolean = true
     var frequenceChanged = false
+    var recordingFilePath : String?= null
+    var recordingElapsedTime : Long = 0
 }

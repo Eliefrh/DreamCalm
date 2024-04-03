@@ -11,6 +11,7 @@ import android.widget.Chronometer
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
@@ -29,7 +30,11 @@ class RecordingUploadingActivity : AppCompatActivity() {
     private lateinit var isRecordingText: TextView
     private lateinit var timerText: TextView
     private lateinit var chronometer: Chronometer
+    private lateinit var buttonRecording : ImageButton
+    private lateinit var buttonPlaySound: Button
+    private lateinit var buttonSavingFile : Button
 
+    val donnesVM: MainActivityViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,8 +49,23 @@ class RecordingUploadingActivity : AppCompatActivity() {
         }
         isRecordingText = findViewById(R.id.isRecordingText)
         chronometer = findViewById(R.id.chronometer)
-
-        val buttonRecording = findViewById<ImageButton>(R.id.recordingButton)
+        buttonRecording= findViewById(R.id.recordingButton)
+        buttonPlaySound = findViewById(R.id.playSound)
+        buttonSavingFile = findViewById(R.id.saveFile)
+        buttonPlaySound.isEnabled = false
+        buttonSavingFile.isEnabled = false
+        // Check if a recording is in progress
+        val recordingFilePath = donnesVM.recordingFilePath
+        if (!recordingFilePath.isNullOrEmpty()) {
+            // Restore the recording file path and update UI accordingly
+            outputFile = File(recordingFilePath)
+            isRecordingText.visibility = TextView.VISIBLE
+            isRecordingText.text ="Recorded a sound"
+            chronometer.visibility = TextView.VISIBLE
+            chronometer.base = SystemClock.elapsedRealtime() + donnesVM.recordingElapsedTime
+            buttonPlaySound.isEnabled = true
+            buttonSavingFile.isEnabled = true
+        }
         buttonRecording.setOnClickListener {
             if (!isRecording) {
                 buttonRecording.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary))
@@ -55,8 +75,21 @@ class RecordingUploadingActivity : AppCompatActivity() {
                 stopRecording()
             }
         }
+        buttonPlaySound.setOnClickListener {
 
-        val buttonSavingFile = findViewById<Button>(R.id.saveFile)
+            outputFile?.let { file ->
+                // Play the recorded audio
+                val mediaPlayer = MediaPlayer().apply {
+                    setDataSource(file.absolutePath)
+                    prepare()
+                    start()
+                    setOnCompletionListener {
+                        // Release the MediaPlayer resources when playback completes
+                        release()
+                    }
+                }
+            }
+        }
         buttonSavingFile.setOnClickListener {
             saveRecording()
         }
@@ -65,6 +98,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
     private fun startRecording() {
 
         isRecordingText.visibility = TextView.VISIBLE
+        isRecordingText.text ="Recording ..."
         chronometer.visibility = TextView.VISIBLE
 
         // Start the chronometer
@@ -98,18 +132,10 @@ class RecordingUploadingActivity : AppCompatActivity() {
         }
         mediaRecorder = null
         isRecording = false
-        outputFile?.let { file ->
-            // Play the recorded audio
-            val mediaPlayer = MediaPlayer().apply {
-                setDataSource(file.absolutePath)
-                prepare()
-                start()
-                setOnCompletionListener {
-                    // Release the MediaPlayer resources when playback completes
-                    release()
-                }
-            }
-        }
+        buttonPlaySound.isEnabled = true
+        buttonSavingFile.isEnabled = true
+        donnesVM.recordingFilePath = outputFile?.absolutePath
+        donnesVM.recordingElapsedTime = chronometer.base - SystemClock.elapsedRealtime()
     }
     private fun saveRecording() {
         if (outputFile != null) {
@@ -130,5 +156,12 @@ class RecordingUploadingActivity : AppCompatActivity() {
         }
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         return File(mediaStorageDir.path + File.separator + "REC_$timeStamp.3gp")
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if(isRecording) {
+            stopRecording()
+        }
     }
 }
