@@ -22,6 +22,7 @@ class AudioService : Service() {
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+
         val audioFilename = intent.getStringExtra(AUDIO_FILENAME_ARG)
         if (audioFilename != null) {
             Log.i(TAG, "Received intent to start playback")
@@ -44,7 +45,27 @@ class AudioService : Service() {
             ACTION_PLAY -> {
                 setNotification()
             }
+
+
         }
+//        else {
+//
+//                // Use MediaPlayer for Android 11 and above
+//                if (_mediaPlayer == null) {
+//                    _mediaPlayer = _mediaPlayer.create(applicationContext, id)
+//                    _mediaPlayer?.isLooping = true // Set looping to true
+//                    _mediaPlayer?.setOnCompletionListener {
+//                        // Restart the playback when it completes
+//                        _mediaPlayer?.start()
+//                    }
+//                } else {
+//                    _mediaPlayer?.reset()
+//                    _mediaPlayer?.setDataSource(applicationContext, Uri.parse("android.resource://$packageName/$id"))
+//                    _mediaPlayer?.prepare()
+//                }
+//            _mediaPlayer?.start()
+//                updateToPlaying()
+//            }
         // If this service is killed, let is remain dead until explicitly started again.
         return START_NOT_STICKY
     }
