@@ -83,18 +83,12 @@ class MainActivity : AppCompatActivity() {
 
     private val stopStartMusicReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
                 if (donnesVM.selectedImageposition != null) {
                     if (donnesVM.isPlaying) {
                         stopPlayback()
                     } else {
                         startPlayback()
                     }
-                }
-            } else {
-                mediaPlayer?.release()
-                mediaPlayer = MediaPlayer.create(applicationContext, R.raw.campfire)
-                mediaPlayer?.start()
             }
 
         }
