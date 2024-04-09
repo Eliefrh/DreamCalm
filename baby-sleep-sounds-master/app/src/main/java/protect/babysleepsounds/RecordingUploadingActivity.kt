@@ -67,7 +67,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
             // Restore the recording file path and update UI accordingly
             outputFile = File(recordingFilePath)
             isRecordingText.visibility = TextView.VISIBLE
-            isRecordingText.text ="Recorded a sound"
+            isRecordingText.text =getString(R.string.recorded)
             chronometer.visibility = TextView.VISIBLE
             chronometer.base = SystemClock.elapsedRealtime() + donnesVM.recordingElapsedTime
             buttonPlaySound.isEnabled = true
@@ -115,7 +115,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
 
     private fun startRecording() {
         isRecordingText.visibility = TextView.VISIBLE
-        isRecordingText.text ="Recording ..."
+        isRecordingText.text = getString(R.string.isRecordingText)
         chronometer.visibility = TextView.VISIBLE
 
         // Start the chronometer
@@ -141,6 +141,8 @@ class RecordingUploadingActivity : AppCompatActivity() {
         isRecording = true
     }
     private fun stopRecording() {
+        isRecordingText.text =getString(R.string.recorded)
+
         // Stop the chronometer
         chronometer.stop()
         mediaRecorder?.apply {

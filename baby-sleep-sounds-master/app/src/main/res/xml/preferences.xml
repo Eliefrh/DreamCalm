@@ -5,11 +5,11 @@
     <PreferenceCategory android:title="@string/customize">
 
         <ListPreference
-            android:key="theme"
-            android:title="@string/theme"
             android:defaultValue="light"
             android:entries="@array/theme_labels"
-            android:entryValues="@array/theme_values"/>
+            android:entryValues="@array/theme_values"
+            android:key="theme"
+            android:title="@string/theme" />
 
         <SwitchPreferenceCompat
             android:key="filter_enabled"

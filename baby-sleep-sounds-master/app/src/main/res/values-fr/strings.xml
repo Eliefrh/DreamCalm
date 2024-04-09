@@ -1,7 +1,7 @@
 <resources
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
-    <string name="app_name">Sons - Sommeil de Bébé</string>
+    <string name="app_name">Sons pour le sommeil de Bébé</string>
     <string name="description">Sélectionnez le son et cliquez sur jouer</string>
     <string name="sound">Son</string>
     <string name="play">Jouer</string>
@@ -39,7 +39,11 @@
     <string name="playbackNotSupported">La lecture en arrière plan est désormais prise en charge, voir le changelog pour plus de détails</string>
     <string name="playbackFailure">Impossible de lire le fichier, voir les logs pour plus de détails</string>
     <string name="sleepTimerUpdated">Mise à jour de l\'App</string>
-
+    <string name="customize">Personnaliser</string>
+    <string name="settings">Réglages</string>
+    <string name="theme_dark">Sombre</string>
+    <string name="theme_light">Clair</string>
+    <string name="theme">Thème</string>
     <string name="about">À propos</string>
     <string name="app_copyright_fmt">Copyright 2016-<xliff:g>%d</xliff:g> Branden Archer</string>
     <string name="app_license">La licence est la GPLv3.</string>
@@ -49,4 +53,13 @@
     <string name="sound_resources"><xliff:g id="app_name">%s</xliff:g> utilise des ressources sonores de <xliff:g id="sound_sources_list">%s</xliff:g></string>
     <string name="image_resources"><xliff:g id="app_name">%s</xliff:g> utilise des ressources sonores de <xliff:g id="sound_sources_list">%s</xliff:g></string>
     <string name="app_libraries"><xliff:g id="app_name">%s</xliff:g> utilise les bibliothèques tierces ou les programmes suivants : <xliff:g id="app_libraries_list">%s</xliff:g></string>
+    <string name="recentlyadded">Récemment ajouté:</string>
+    <string name="descriptionRecording">Recorder un son</string>
+    <string name="descriptionUploading">Uploader un son</string>
+    <string name="saveFile">Sauvegarder</string>
+    <string name="playSound">Jouer</string>
+    <string name="isRecordingText">Enregistrement en cours…</string>
+    <string name="recorded">Son enregistré</string>
+    <string name="boutonAppuyer">Appliquer</string>
+    <string name="action_add_own">Ajout de son</string>
 </resources>
