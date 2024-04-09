@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.media.AudioManager
+import android.media.MediaPlayer
 import android.media.session.MediaSession
 import android.os.Build
 import android.os.Bundle
@@ -35,12 +36,12 @@ import androidx.core.app.ActivityCompat
 import com.google.common.collect.ImmutableMap
 import nl.bravobit.ffmpeg.ExecuteBinaryResponseHandler
 import nl.bravobit.ffmpeg.FFmpeg
-import nl.bravobit.ffmpeg.exceptions.FFmpegCommandAlreadyRunningException
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.util.Calendar
 import java.util.LinkedList
+
 
 data class SoundItem(val imageResId: Int)
 
@@ -59,6 +60,11 @@ class MainActivity : AppCompatActivity() {
     var timeLeftInMillis: Long = 0
     lateinit var sleepTimeoutSpinner : Spinner
 
+    private var mediaPlayer: MediaPlayer? = null
+
+
+    val sourcePath = "/baby-sleep-sounds-master/app/src/main/res/raw"
+    val destinationPath = "/storage/emulated/0/Android/data/protect.babysleepsounds/files"
 
     // Déclaration de constantes pour les permissions
     private val REQUEST_PERMISSION_CODE = 123
@@ -77,12 +83,21 @@ class MainActivity : AppCompatActivity() {
 
     private val stopStartMusicReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (donnesVM.isPlaying) {
-                stopPlayback()
-            }else{
-                startPlayback()
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+
+                if (donnesVM.isPlaying) {
+                    stopPlayback()
+                } else {
+                    startPlayback()
+                }
+            } else {
+                mediaPlayer?.release()
+                mediaPlayer = MediaPlayer.create(applicationContext, R.raw.campfire)
+                mediaPlayer?.start()
             }
+
         }
+
     }
 
     private val timerUpdateReceiver = object : BroadcastReceiver() {
@@ -113,7 +128,7 @@ class MainActivity : AppCompatActivity() {
        startService(startIntentMedia)
 
 
-        if(donnesVM.isPlaying){
+        if (donnesVM.isPlaying) {
             val button = findViewById<Button>(R.id.button)
             button.setText(R.string.stop)
             setControlsEnabled(false)
@@ -122,7 +137,6 @@ class MainActivity : AppCompatActivity() {
 
         super.onStart()
     }
-
 
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -135,11 +149,19 @@ class MainActivity : AppCompatActivity() {
         checkPermissions()
         sleepTimeoutSpinner = findViewById(R.id.sleepTimerSpinner)
 
+        val filesDir = filesDir
+
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            copyRawFolder(sourcePath, destinationPath)
+//        }
+
+
         // Initialize BluetoothAdapter
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         if (bluetoothAdapter == null) {
             // Device doesn't support Bluetooth
-            Toast.makeText(this, "Bluetooth is not supported on this device", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Bluetooth is not supported on this device", Toast.LENGTH_SHORT)
+                .show()
         }
 
         initializeApp()
@@ -152,10 +174,10 @@ class MainActivity : AppCompatActivity() {
 
         gridView.setOnItemClickListener { parent, view, position, id ->
             // Store the selected position in a variable
-            donnesVM.selectedImageposition= position
+            donnesVM.selectedImageposition = position
             playingMusicImg.setImageResource(soundItems[position].imageResId)
         }
-        if(donnesVM.selectedImageposition != null){
+        if (donnesVM.selectedImageposition != null) {
             playingMusicImg.setImageResource(soundItems[donnesVM.selectedImageposition!!].imageResId)
         }
         val sleepTimeoutSpinner = findViewById<Spinner>(R.id.sleepTimerSpinner)
@@ -172,7 +194,7 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this@MainActivity, R.string.sleepTimerUpdated, Toast.LENGTH_LONG)
                         .show()
                     isUserSelection = false
-                }else if(!donnesVM.itemSelected){
+                } else if (!donnesVM.itemSelected) {
                     donnesVM.itemSelected = true
                 }
             }
@@ -198,15 +220,24 @@ class MainActivity : AppCompatActivity() {
 
         val button = findViewById<Button>(R.id.button)
         button.setOnClickListener {
-            if (!donnesVM.isPlaying) {
-                startPlayback()
-            } else {
-
-                stopPlayback()
+//            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+//        if()
+            if (donnesVM.selectedImageposition != null) {
+                if (!donnesVM.isPlaying) {
+                    startPlayback()
+                } else {
+                    stopPlayback()
+                }
             }
+//            } else {
+//                mediaPlayer?.release()
+//                mediaPlayer = MediaPlayer.create(applicationContext, R.raw.campfire)
+//                mediaPlayer?.start()
+//            }
         }
         _ffmpeg = FFmpeg.getInstance(this)
         File(filesDir, "ffmpeg").setExecutable(true)
+        File(getExternalFilesDir(null), "files/ffmpeg").setExecutable(true)
 
         if (_ffmpeg is FFmpeg && _ffmpeg!!.isSupported()) {
             button.isEnabled = true
@@ -214,8 +245,7 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "ffmpeg not supported")
             reportPlaybackUnsupported()
         }
-        _ffmpeg = FFmpeg.getInstance(this)
-        File(filesDir, "ffmpeg").setExecutable(true)
+
 
         // Add the code to set execute permissions for the directory and the FFmpeg binary file
         val ffmpegDirectory = File("/data/user/0/protect.babysleepsounds/files/")
@@ -326,34 +356,30 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startPlayback() {
+        val selectedPosition = donnesVM?.selectedImageposition
+        val selectedSoundItem = soundItems[selectedPosition!!]
+        val selectedSound = selectedSoundItem.imageResId
+        val id = _soundMap!![selectedSound]!!
+        // Check if it's a valid selection
+        if (selectedPosition != null && selectedPosition != -1 && selectedPosition < soundItems.size) {
 
-        val selectedPosition = donnesVM.selectedImageposition
-        //check if its a valid selection
-        if (selectedPosition != null && selectedPosition != -1 && selectedPosition!! < soundItems.size) {
-            val selectedSoundItem = soundItems[selectedPosition]
-            val selectedSound = selectedSoundItem.imageResId
-            Log.d("Elie", selectedSound.toString())
-            val id = _soundMap!![selectedSound]!!
-            volumeControlStream = AudioManager.STREAM_MUSIC
-            try {
-                // Replace the following line to use getExternalFilesDir()
-                val originalFile = File(getExternalFilesDir(null), ORIGINAL_MP3_FILE)
-                Log.i(TAG, "Writing file out prior to WAV conversion")
-                writeToFile(id, originalFile)
-                val processed = File(filesDir, PROCESSED_RAW_FILE)
+            val originalFile = File(getExternalFilesDir(null), "$selectedSound.mp3")
+            writeToFile(id, originalFile)
+            val processed = File(filesDir, "$selectedSound.raw")
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+                // Use existing code for Android 10 and below
+
                 if (processed.exists()) {
                     val result = processed.delete()
                     if (!result) {
                         throw IOException("Unable to delete previous file, cannot prepare new file")
                     }
                 }
-                Log.i(TAG, "Converting file to WAV")
                 val arguments = LinkedList<String>()
                 arguments.add("-i")
                 arguments.add(originalFile.absolutePath)
                 if (Preferences[this]!!.isLowPassFilterEnabled) {
                     val frequencyValue = Preferences[this]!!.lowPassFilterFrequency
-                    Log.i(TAG, "Will perform lowpass filter to $frequencyValue Hz")
                     arguments.add("-af")
                     arguments.add("lowpass=frequency=$frequencyValue")
                 }
@@ -366,7 +392,6 @@ class MainActivity : AppCompatActivity() {
                 _encodingProgress = ProgressDialog(this)
                 _encodingProgress!!.setMessage(getString(R.string.preparing))
                 _encodingProgress!!.show()
-                Log.i(TAG, "Launching ffmpeg")
                 val cmd = arguments.toTypedArray()
                 _ffmpeg!!.execute(cmd, object : ExecuteBinaryResponseHandler() {
                     override fun onStart() {
@@ -397,18 +422,117 @@ class MainActivity : AppCompatActivity() {
                         Log.d(TAG, "ffmpeg execute onFinish()")
                     }
                 })
-            } catch (e: IOException) {
-                Log.i(TAG, "Failed to start playback", e)
-                reportPlaybackFailure()
-            } catch (e: FFmpegCommandAlreadyRunningException) {
-                Log.i(TAG, "Failed to start playback", e)
-                reportPlaybackFailure()
+
             }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+
+//                val uri = Uri.parse("android.resource://" + packageName + "/" + "dryer.mp3")
+
+//                val selectedPosition = donnesVM.selectedImageposition
+//
+//                val selectedSoundItem = soundItems[selectedPosition!!]
+//
+//                val selectedSound = selectedSoundItem.imageResId
+//
+//                val processed = File(filesDir, "$selectedSound.raw")
+
+//            Log.d(TAG, "ffmpeg execute onSuccess(): $message")
+
+//                val filesDir = filesDir
+//                val ffmpegDir = File(filesDir, "ffmpeg")
+//                val externalFilesDir = getExternalFilesDir(null)
+//                val ffmpegExternalFile = File(externalFilesDir, "ffmpeg")
+//
+//
+//                if (ffmpegDir.exists()) {
+//                    if (!ffmpegExternalFile.exists()) {
+//                        try {
+//                            ffmpegDir.copyTo(ffmpegExternalFile, true)
+//                            ffmpegDir.delete()
+//                            ffmpegExternalFile.setExecutable(true)
+//                        } catch (e: IOException) {
+//                            Log.e(
+//                                TAG,
+//                                "Failed to copy FFmpeg binary to external storage: ${e.message}"
+//                            )
+//                        }
+//                    } else {
+//                        Log.d(TAG, "FFmpeg binary already exists in external storage")
+//                    }
+//
+//                    val ffmpegExternalFilePath = ffmpegExternalFile.absolutePath
+//                    val command = arrayOf(
+//                        ffmpegExternalFilePath,
+//                        "-i", "pipe:0", // Input from stdin
+//                        "-f", "s16le", // Output format
+//                        "-acodec", "pcm_s16le", // Audio codec
+//                        "pipe:1" // Output to stdout
+//                    )
+//
+//                    if (ffmpegExternalFile.exists()) {
+//                        val command = arrayOf(
+//                            ffmpegExternalFile.absolutePath, // Use the absolute path to the FFmpeg executable in the external storage
+//                            "-i", "pipe:0", // Input from stdin
+//                            "-f", "s16le", // Output format
+//                            "-acodec", "pcm_s16le", // Audio codec
+//                            "pipe:1" // Output to stdout
+//                        )
+//
+//                        _ffmpeg!!.execute(command, object : ExecuteBinaryResponseHandler() {
+//                            override fun onSuccess(message: String) {
+//                                val outputFile = File(getExternalFilesDir(null), "output.raw")
+//                                val outputStream = FileOutputStream(outputFile)
+//                                outputStream.write(message.toByteArray())
+//                                outputStream.close()
+//
+                val startIntent =
+                    Intent(this@MainActivity, AudioService::class.java)
+                startIntent.putExtra(
+                    AudioService.AUDIO_FILENAME_ARG,
+                    "/storage/emulated/0/Android/data/protect.babysleepsounds/files/" + selectedSound + ".mp3"
+                )
+                startService(startIntent)
+                updateToPlaying()
+//                            }
+//                        })
+//                    } else {
+//                        Log.e(TAG, "FFmpeg file not found in external storage")
+//                    }
+//                } else {
+//                    Log.d(TAG, "FFmpeg binary not found in internal storage")
+//                }
+            }
+
+//                val startIntent = Intent(this@MainActivity, AudioService::class.java)
+//                startIntent.putExtra(
+//                    AudioService.AUDIO_FILENAME_ARG,
+//                    "/storage/emulated/0/Android/data/protect.babysleepsounds/files/" + selectedSound + ".mp3"
+//                )
+//                startService(startIntent)
+//                updateToPlaying()
+
+
+//                // Use MediaPlayer for Android 11 and above
+//                if (mediaPlayer == null) {
+//                    mediaPlayer = MediaPlayer.create(applicationContext, id)
+//                    mediaPlayer?.isLooping = true // Set looping to true
+//                    mediaPlayer?.setOnCompletionListener {
+//                        // Restart the playback when it completes
+//                        mediaPlayer?.start()
+//                    }
+//                } else {
+//                    mediaPlayer?.reset()
+//                    mediaPlayer?.setDataSource(applicationContext, Uri.parse("android.resource://$packageName/$id"))
+//                    mediaPlayer?.prepare()
+//                }
+//                mediaPlayer?.start()
+//                updateToPlaying()
 
         } else {
             // Handle the case when no item is selected
             Toast.makeText(this, "Please select a sound first", Toast.LENGTH_SHORT).show()
         }
+
     }
 
     /**
@@ -511,6 +635,11 @@ class MainActivity : AppCompatActivity() {
             button.setText(R.string.play)
             setControlsEnabled(true)
         }
+        // Stop the MediaPlayer
+        mediaPlayer?.stop()
+        mediaPlayer?.release()
+        mediaPlayer = null
+
     }
 
 
@@ -528,18 +657,19 @@ class MainActivity : AppCompatActivity() {
                 stopPlayback()
             }
             for (toDelete in arrayOf(ORIGINAL_MP3_FILE, PROCESSED_RAW_FILE)) {
-            val file = File(filesDir, toDelete)
-            if (file.exists()) { // Check if the file exists before deleting
-            val result = file.delete()
-            if (!result) {
-            Log.w(TAG, "Failed to delete file on exit: " + file.absolutePath)
-            }
-            }
+                val file = File(filesDir, toDelete)
+                if (file.exists()) { // Check if the file exists before deleting
+                    val result = file.delete()
+                    if (!result) {
+                        Log.w(TAG, "Failed to delete file on exit: " + file.absolutePath)
+                    }
+                }
             }
 
         }
         unregisterReceiver(stopMusicReceiver)
         unregisterReceiver(stopStartMusicReceiver)
+        mediaPlayer?.release()
         super.onDestroy()
     }
 
