@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mediaSession: MediaSession
     var countdownDuration = 60 * 1000L
     var timeLeftInMillis: Long = 0
-    lateinit var sleepTimeoutSpinner : Spinner
+    lateinit var sleepTimeoutSpinner: Spinner
 
     private var mediaPlayer: MediaPlayer? = null
 
@@ -84,11 +84,12 @@ class MainActivity : AppCompatActivity() {
     private val stopStartMusicReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
-
-                if (donnesVM.isPlaying) {
-                    stopPlayback()
-                } else {
-                    startPlayback()
+                if (donnesVM.selectedImageposition != null) {
+                    if (donnesVM.isPlaying) {
+                        stopPlayback()
+                    } else {
+                        startPlayback()
+                    }
                 }
             } else {
                 mediaPlayer?.release()
@@ -115,6 +116,7 @@ class MainActivity : AppCompatActivity() {
             stopPlayback()
         }
     }
+
     override fun onStart() {
         val intentFilter = IntentFilter("STOP_MUSIC_ACTION")
         registerReceiver(stopMusicReceiver, intentFilter)
@@ -124,8 +126,8 @@ class MainActivity : AppCompatActivity() {
 
         registerReceiver(timerUpdateReceiver, IntentFilter("TIMER_UPDATE"))
         registerReceiver(timerFinishReceiver, IntentFilter("TIMER_FINISH"))
-       val startIntentMedia = Intent(this@MainActivity, MediaPlaybackService::class.java)
-       startService(startIntentMedia)
+        val startIntentMedia = Intent(this@MainActivity, MediaPlaybackService::class.java)
+        startService(startIntentMedia)
 
 
         if (donnesVM.isPlaying) {
@@ -260,7 +262,6 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "ffmpeg not supported")
             reportPlaybackUnsupported()
         }
-
 
 
     }
@@ -583,7 +584,7 @@ class MainActivity : AppCompatActivity() {
         val sleepTimeoutSpinner = findViewById<Spinner>(R.id.sleepTimerSpinner)
         val selectedTimeout = sleepTimeoutSpinner.selectedItem as String
         val timeoutMs = _timeMap!![selectedTimeout]!!
-        if(timeoutMs>0 && !donnesVM.frequenceChanged){
+        if (timeoutMs > 0 && !donnesVM.frequenceChanged) {
             val serviceTimerChanged = Intent(this@MainActivity, TimerService::class.java)
             serviceTimerChanged.putExtra("timerchanged", true)
             startService(serviceTimerChanged)
@@ -591,9 +592,9 @@ class MainActivity : AppCompatActivity() {
             val serviceIntent = Intent(this@MainActivity, TimerService::class.java)
             serviceIntent.putExtra("countdownDuration", timeoutMs)
             startService(serviceIntent)
-    }else if(donnesVM.frequenceChanged){
+        } else if (donnesVM.frequenceChanged) {
             donnesVM.frequenceChanged = false
-    } else{
+        } else {
             val serviceTimerChanged = Intent(this@MainActivity, TimerService::class.java)
             serviceTimerChanged.putExtra("timerchanged", true)
             serviceTimerChanged.putExtra("timerDisabled", true)
@@ -607,8 +608,9 @@ class MainActivity : AppCompatActivity() {
     private fun updateToPlaying() {
         donnesVM.isPlaying = true
         runOnUiThread {
-            if(!donnesVM.frequenceChanged){
-            updatePlayTimeout()}else{
+            if (!donnesVM.frequenceChanged) {
+                updatePlayTimeout()
+            } else {
                 donnesVM.frequenceChanged = false
             }
             val button = findViewById<Button>(R.id.button)
@@ -622,7 +624,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun stopPlayback() {
-        if(!donnesVM.frequenceChanged) {
+        Log.d("rien",donnesVM.frequenceChanged.toString())
+        if (!donnesVM.frequenceChanged) {
             val serviceTimerStop = Intent(this@MainActivity, TimerService::class.java)
             startService(serviceTimerStop)
         }
