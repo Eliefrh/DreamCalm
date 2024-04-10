@@ -44,16 +44,19 @@ import java.util.LinkedList
 
 
 data class SoundItem(val imageResId: Int)
+data class AddedSoundItem(val imageResId: Int)
 
 
 class MainActivity : AppCompatActivity() {
     val donnesVM: MainActivityViewModel by viewModels()
     private var _soundMap: Map<Int, Int>? = null
+    private var _addedSoundMap: Map<Int, String>? = null
     private var _timeMap: Map<String, Int>? = null
     private var _ffmpeg: FFmpeg? = null
     private var _encodingProgress: ProgressDialog? = null
     private var bluetoothAdapter: BluetoothAdapter? = null
     lateinit var soundItems: List<SoundItem>
+    private var addedSoundItem = mutableListOf<AddedSoundItem>()
     private var isUserSelection = false
     private lateinit var mediaSession: MediaSession
     var countdownDuration = 60 * 1000L
@@ -61,6 +64,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var sleepTimeoutSpinner: Spinner
 
     private var mediaPlayer: MediaPlayer? = null
+    private var choosedGrid: Int = 0
 
 
     val sourcePath = "/baby-sleep-sounds-master/app/src/main/res/raw"
@@ -83,12 +87,12 @@ class MainActivity : AppCompatActivity() {
 
     private val stopStartMusicReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-                if (donnesVM.selectedImageposition != null) {
-                    if (donnesVM.isPlaying) {
-                        stopPlayback()
-                    } else {
-                        startPlayback()
-                    }
+            if (donnesVM.selectedImageposition != null) {
+                if (donnesVM.isPlaying) {
+                    stopPlayback()
+                } else {
+                    startPlayback()
+                }
             }
 
         }
@@ -147,10 +151,6 @@ class MainActivity : AppCompatActivity() {
 
         val filesDir = filesDir
 
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            copyRawFolder(sourcePath, destinationPath)
-//        }
-
 
         // Initialize BluetoothAdapter
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
@@ -161,18 +161,35 @@ class MainActivity : AppCompatActivity() {
         }
 
         initializeApp()
+        scanSoundFolder()
 
         val gridView = findViewById<GridView>(R.id.gridView)
         soundItems = _soundMap?.keys?.map { SoundItem(it) } ?: emptyList()
         val adapter = SoundAdapter(this, soundItems)
         gridView.adapter = adapter
+
+
+        val addedGridView = findViewById<GridView>(R.id.gridView_ajoute)
+//        addedSoundItem = _addedSoundMap?.keys?.map { AddedSoundItem(it) } ?: emptyList()
+        val addedAdapter = AddedSoundAdapter(this, addedSoundItem)
+
         var playingMusicImg = findViewById<ImageView>(R.id.playingSound)
 
         gridView.setOnItemClickListener { parent, view, position, id ->
             // Store the selected position in a variable
             donnesVM.selectedImageposition = position
             playingMusicImg.setImageResource(soundItems[position].imageResId)
+            choosedGrid = 1
         }
+
+        addedGridView.setOnItemClickListener { parent, view, position, id ->
+            // Store the selected position in a variable
+            donnesVM.selectedImageposition = position
+            playingMusicImg.setImageResource(addedSoundItem[position].imageResId)
+            choosedGrid = 2
+        }
+
+
         if (donnesVM.selectedImageposition != null) {
             playingMusicImg.setImageResource(soundItems[donnesVM.selectedImageposition!!].imageResId)
         }
@@ -180,10 +197,7 @@ class MainActivity : AppCompatActivity() {
         val times: List<String> = _timeMap?.keys?.toList() ?: emptyList()
         sleepTimeoutSpinner.onItemSelectedListener = object : OnItemSelectedListener {
             override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
+                parent: AdapterView<*>?, view: View?, position: Int, id: Long
             ) {
                 if (donnesVM.isPlaying && donnesVM.itemSelected && isUserSelection) {
                     updatePlayTimeout()
@@ -206,8 +220,7 @@ class MainActivity : AppCompatActivity() {
             false  // Return false to indicate that touch event is not consumed
         }
         val timesAdapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item, times
+            this, android.R.layout.simple_spinner_item, times
         )
         timesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         sleepTimeoutSpinner.adapter = timesAdapter
@@ -216,8 +229,7 @@ class MainActivity : AppCompatActivity() {
 
         val button = findViewById<Button>(R.id.button)
         button.setOnClickListener {
-//            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
-//        if()
+
             if (donnesVM.selectedImageposition != null) {
                 if (!donnesVM.isPlaying) {
                     startPlayback()
@@ -225,11 +237,7 @@ class MainActivity : AppCompatActivity() {
                     stopPlayback()
                 }
             }
-//            } else {
-//                mediaPlayer?.release()
-//                mediaPlayer = MediaPlayer.create(applicationContext, R.raw.campfire)
-//                mediaPlayer?.start()
-//            }
+
         }
         _ffmpeg = FFmpeg.getInstance(this)
         File(filesDir, "ffmpeg").setExecutable(true)
@@ -265,9 +273,7 @@ class MainActivity : AppCompatActivity() {
         val permissionsToRequest = mutableListOf<String>()
         if (permissionsToRequest.isNotEmpty()) {
             ActivityCompat.requestPermissions(
-                this,
-                permissionsToRequest.toTypedArray(),
-                REQUEST_PERMISSION_CODE
+                this, permissionsToRequest.toTypedArray(), REQUEST_PERMISSION_CODE
             )
         } else {
             // Permissions already granted, continue with app initialization
@@ -277,9 +283,7 @@ class MainActivity : AppCompatActivity() {
 
     // Fonction pour gérer la réponse de l'utilisateur à la demande d'autorisations
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_PERMISSION_CODE) {
@@ -296,9 +300,7 @@ class MainActivity : AppCompatActivity() {
             } else {
                 // If any permission is denied, inform the user and finish the activity
                 Toast.makeText(
-                    this,
-                    "Permission denied. App cannot function properly.",
-                    Toast.LENGTH_SHORT
+                    this, "Permission denied. App cannot function properly.", Toast.LENGTH_SHORT
                 ).show()
                 finish()
             }
@@ -313,33 +315,34 @@ class MainActivity : AppCompatActivity() {
         // - Cut the first 3 seconds, and place it over the last three seconds
         //   which should create a seamless track appropriate for looping
         // - Save as a mp3 file, 128kbps, stereo
-        _soundMap = ImmutableMap.builder<Int, Int>()
-            .put(R.mipmap.campfire_foreground, R.raw.campfire)
-            .put(R.mipmap.dryer_foreground, R.raw.dryer)
-            .put(R.mipmap.fan_foreground, R.raw.fan)
-            .put(R.mipmap.ocean_foreground, R.raw.ocean)
-            .put(R.mipmap.rain_foreground, R.raw.rain)
-            .put(R.mipmap.refrigerator_foreground, R.raw.refrigerator)
-            .put(R.mipmap.shhh_foreground, R.raw.shhhh)
-            .put(R.mipmap.shower_foreground, R.raw.shower)
-            .put(R.mipmap.stream_foreground, R.raw.stream)
-            .put(R.mipmap.vacuum_foreground, R.raw.vacuum)
-            .put(R.mipmap.water_foreground, R.raw.water)
-            .put(R.mipmap.waterfall_foreground, R.raw.waterfall)
-            .put(R.mipmap.waves_foreground, R.raw.waves)
-            .put(R.mipmap.white_noise_foreground, R.raw.white_noise)
-            .build()
-        _timeMap = ImmutableMap.builder<String, Int>()
-            .put(resources.getString(R.string.disabled), 0)
-            .put(resources.getString(R.string.time_1minute), 1000 * 60 * 1)
-            .put(resources.getString(R.string.time_5minute), 1000 * 60 * 5)
-            .put(resources.getString(R.string.time_10minute), 1000 * 60 * 10)
-            .put(resources.getString(R.string.time_30minute), 1000 * 60 * 30)
-            .put(resources.getString(R.string.time_1hour), 1000 * 60 * 60 * 1)
-            .put(resources.getString(R.string.time_2hour), 1000 * 60 * 60 * 2)
-            .put(resources.getString(R.string.time_4hour), 1000 * 60 * 60 * 4)
-            .put(resources.getString(R.string.time_8hour), 1000 * 60 * 60 * 8)
-            .build()
+        _soundMap =
+            ImmutableMap.builder<Int, Int>().put(R.mipmap.campfire_foreground, R.raw.campfire)
+                .put(R.mipmap.dryer_foreground, R.raw.dryer).put(R.mipmap.fan_foreground, R.raw.fan)
+                .put(R.mipmap.ocean_foreground, R.raw.ocean)
+                .put(R.mipmap.rain_foreground, R.raw.rain)
+                .put(R.mipmap.refrigerator_foreground, R.raw.refrigerator)
+                .put(R.mipmap.shhh_foreground, R.raw.shhhh)
+                .put(R.mipmap.shower_foreground, R.raw.shower)
+                .put(R.mipmap.stream_foreground, R.raw.stream)
+                .put(R.mipmap.vacuum_foreground, R.raw.vacuum)
+                .put(R.mipmap.water_foreground, R.raw.water)
+                .put(R.mipmap.waterfall_foreground, R.raw.waterfall)
+                .put(R.mipmap.waves_foreground, R.raw.waves)
+                .put(R.mipmap.white_noise_foreground, R.raw.white_noise).build()
+        _timeMap =
+            ImmutableMap.builder<String, Int>().put(resources.getString(R.string.disabled), 0)
+                .put(resources.getString(R.string.time_1minute), 1000 * 60 * 1)
+                .put(resources.getString(R.string.time_5minute), 1000 * 60 * 5)
+                .put(resources.getString(R.string.time_10minute), 1000 * 60 * 10)
+                .put(resources.getString(R.string.time_30minute), 1000 * 60 * 30)
+                .put(resources.getString(R.string.time_1hour), 1000 * 60 * 60 * 1)
+                .put(resources.getString(R.string.time_2hour), 1000 * 60 * 60 * 2)
+                .put(resources.getString(R.string.time_4hour), 1000 * 60 * 60 * 4)
+                .put(resources.getString(R.string.time_8hour), 1000 * 60 * 60 * 8).build()
+
+
+//        _addedSoundMap = ImmutableMap.builder<Int,String>()
+//            .put(R.mipmap.ic_launcher,)
 
     }
 
@@ -353,6 +356,8 @@ class MainActivity : AppCompatActivity() {
     private fun startPlayback() {
         val selectedPosition = donnesVM?.selectedImageposition
         val selectedSoundItem = soundItems[selectedPosition!!]
+
+
         val selectedSound = selectedSoundItem.imageResId
         val id = _soundMap!![selectedSound]!!
         // Check if it's a valid selection
@@ -397,8 +402,7 @@ class MainActivity : AppCompatActivity() {
                         Log.d(TAG, "ffmpeg execute onSuccess(): $message")
                         val startIntent = Intent(this@MainActivity, AudioService::class.java)
                         startIntent.putExtra(
-                            AudioService.AUDIO_FILENAME_ARG,
-                            processed.absolutePath
+                            AudioService.AUDIO_FILENAME_ARG, processed.absolutePath
                         )
                         startService(startIntent)
                         updateToPlaying()
@@ -421,108 +425,17 @@ class MainActivity : AppCompatActivity() {
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
 
-//                val uri = Uri.parse("android.resource://" + packageName + "/" + "dryer.mp3")
-
-//                val selectedPosition = donnesVM.selectedImageposition
-//
-//                val selectedSoundItem = soundItems[selectedPosition!!]
-//
-//                val selectedSound = selectedSoundItem.imageResId
-//
-//                val processed = File(filesDir, "$selectedSound.raw")
-
-//            Log.d(TAG, "ffmpeg execute onSuccess(): $message")
-
-//                val filesDir = filesDir
-//                val ffmpegDir = File(filesDir, "ffmpeg")
-//                val externalFilesDir = getExternalFilesDir(null)
-//                val ffmpegExternalFile = File(externalFilesDir, "ffmpeg")
-//
-//
-//                if (ffmpegDir.exists()) {
-//                    if (!ffmpegExternalFile.exists()) {
-//                        try {
-//                            ffmpegDir.copyTo(ffmpegExternalFile, true)
-//                            ffmpegDir.delete()
-//                            ffmpegExternalFile.setExecutable(true)
-//                        } catch (e: IOException) {
-//                            Log.e(
-//                                TAG,
-//                                "Failed to copy FFmpeg binary to external storage: ${e.message}"
-//                            )
-//                        }
-//                    } else {
-//                        Log.d(TAG, "FFmpeg binary already exists in external storage")
-//                    }
-//
-//                    val ffmpegExternalFilePath = ffmpegExternalFile.absolutePath
-//                    val command = arrayOf(
-//                        ffmpegExternalFilePath,
-//                        "-i", "pipe:0", // Input from stdin
-//                        "-f", "s16le", // Output format
-//                        "-acodec", "pcm_s16le", // Audio codec
-//                        "pipe:1" // Output to stdout
-//                    )
-//
-//                    if (ffmpegExternalFile.exists()) {
-//                        val command = arrayOf(
-//                            ffmpegExternalFile.absolutePath, // Use the absolute path to the FFmpeg executable in the external storage
-//                            "-i", "pipe:0", // Input from stdin
-//                            "-f", "s16le", // Output format
-//                            "-acodec", "pcm_s16le", // Audio codec
-//                            "pipe:1" // Output to stdout
-//                        )
-//
-//                        _ffmpeg!!.execute(command, object : ExecuteBinaryResponseHandler() {
-//                            override fun onSuccess(message: String) {
-//                                val outputFile = File(getExternalFilesDir(null), "output.raw")
-//                                val outputStream = FileOutputStream(outputFile)
-//                                outputStream.write(message.toByteArray())
-//                                outputStream.close()
-//
-                val startIntent =
-                    Intent(this@MainActivity, AudioService::class.java)
+                val startIntent = Intent(this@MainActivity, AudioService::class.java)
                 startIntent.putExtra(
                     AudioService.AUDIO_FILENAME_ARG,
                     "/storage/emulated/0/Android/data/protect.babysleepsounds/files/" + selectedSound + ".mp3"
                 )
                 startService(startIntent)
                 updateToPlaying()
-//                            }
-//                        })
-//                    } else {
-//                        Log.e(TAG, "FFmpeg file not found in external storage")
-//                    }
-//                } else {
-//                    Log.d(TAG, "FFmpeg binary not found in internal storage")
-//                }
+
             }
 
-//                val startIntent = Intent(this@MainActivity, AudioService::class.java)
-//                startIntent.putExtra(
-//                    AudioService.AUDIO_FILENAME_ARG,
-//                    "/storage/emulated/0/Android/data/protect.babysleepsounds/files/" + selectedSound + ".mp3"
-//                )
-//                startService(startIntent)
-//                updateToPlaying()
-
-
-//                // Use MediaPlayer for Android 11 and above
-//                if (mediaPlayer == null) {
-//                    mediaPlayer = MediaPlayer.create(applicationContext, id)
-//                    mediaPlayer?.isLooping = true // Set looping to true
-//                    mediaPlayer?.setOnCompletionListener {
-//                        // Restart the playback when it completes
-//                        mediaPlayer?.start()
-//                    }
-//                } else {
-//                    mediaPlayer?.reset()
-//                    mediaPlayer?.setDataSource(applicationContext, Uri.parse("android.resource://$packageName/$id"))
-//                    mediaPlayer?.prepare()
-//                }
-//                mediaPlayer?.start()
-//                updateToPlaying()
-
+//
         } else {
             // Handle the case when no item is selected
             Toast.makeText(this, "Please select a sound first", Toast.LENGTH_SHORT).show()
@@ -618,7 +531,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun stopPlayback() {
-        Log.d("rien",donnesVM.frequenceChanged.toString())
+        Log.d("rien", donnesVM.frequenceChanged.toString())
+
         if (!donnesVM.frequenceChanged) {
             val serviceTimerStop = Intent(this@MainActivity, TimerService::class.java)
             startService(serviceTimerStop)
@@ -690,10 +604,34 @@ class MainActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+
+    private fun scanSoundFolder() {
+        val soundDirectory =
+            File("/storage/emulated/0/Android/data/protect.babysleepsounds/files/Music/SelectedSounds")
+        val soundFiles = soundDirectory.listFiles { dir, name -> name.endsWith(".3gp") }
+        val addedGridView = findViewById<GridView>(R.id.gridView_ajoute)
+
+        if (soundFiles != null) {
+            for (soundFile in soundFiles) {
+                val imageResId = R.mipmap.ic_launcher
+                val addedSound = AddedSoundItem(imageResId)
+                addedSoundItem.add(addedSound)
+            }
+        }
+
+        val addedAdapter = AddedSoundAdapter(this, addedSoundItem)
+        addedGridView.adapter = addedAdapter
+
+        // Notify the adapter that the data set has changed
+        addedAdapter.notifyDataSetChanged()
+    }
+
     private fun displayAboutDialog() {
         val USED_LIBRARIES: Map<String, String> = ImmutableMap.of(
-            "FFmpeg", "https://ffmpeg.org/",
-            "FFmpeg-Android", "https://github.com/writingminds/ffmpeg-android"
+            "FFmpeg",
+            "https://ffmpeg.org/",
+            "FFmpeg-Android",
+            "https://github.com/writingminds/ffmpeg-android"
         )
         val SOUND_RESOURCES: Map<String, String> = ImmutableMap.of(
             "Canton Becker",
@@ -735,53 +673,31 @@ class MainActivity : AppCompatActivity() {
             Log.w(TAG, "Package name not found", e)
         }
         val wv = WebView(this)
-        val html = "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" />" +
-                "<img src=\"file:///android_res/mipmap/ic_launcher.png\" alt=\"" + appName + "\"/>" +
-                "<h1>" + String.format(
-            getString(R.string.about_title_fmt),
-            "<a href=\"" + getString(R.string.app_webpage_url)
-        ) + "\">" +
-                appName +
-                "</a>" +
-                "</h1><p>" +
-                appName +
-                " " + String.format(getString(R.string.debug_version_fmt), version) +
-                "</p><p>" + String.format(
-            getString(R.string.app_revision_fmt),
-            "<a href=\"" + getString(R.string.app_revision_url) + "\">" +
-                    getString(R.string.app_revision_url) +
-                    "</a>"
-        ) +
-                "</p><hr/><p>" + String.format(getString(R.string.app_copyright_fmt), year) +
-                "</p><hr/><p>" +
-                getString(R.string.app_license) +
-                "</p><hr/><p>" + String.format(
-            getString(R.string.sound_resources),
-            appName,
-            soundResources.toString()
-        ) +
-                "</p><hr/><p>" + String.format(
-            getString(R.string.image_resources),
-            appName,
-            imageResources.toString()
-        ) +
-                "</p><hr/><p>" + String.format(
-            getString(R.string.app_libraries),
-            appName,
-            libs.toString()
-        )
+        val html =
+            "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" />" + "<img src=\"file:///android_res/mipmap/ic_launcher.png\" alt=\"" + appName + "\"/>" + "<h1>" + String.format(
+                getString(R.string.about_title_fmt),
+                "<a href=\"" + getString(R.string.app_webpage_url)
+            ) + "\">" + appName + "</a>" + "</h1><p>" + appName + " " + String.format(
+                getString(R.string.debug_version_fmt),
+                version
+            ) + "</p><p>" + String.format(
+                getString(R.string.app_revision_fmt),
+                "<a href=\"" + getString(R.string.app_revision_url) + "\">" + getString(R.string.app_revision_url) + "</a>"
+            ) + "</p><hr/><p>" + String.format(
+                getString(R.string.app_copyright_fmt),
+                year
+            ) + "</p><hr/><p>" + getString(R.string.app_license) + "</p><hr/><p>" + String.format(
+                getString(R.string.sound_resources), appName, soundResources.toString()
+            ) + "</p><hr/><p>" + String.format(
+                getString(R.string.image_resources), appName, imageResources.toString()
+            ) + "</p><hr/><p>" + String.format(
+                getString(R.string.app_libraries), appName, libs.toString()
+            )
         wv.loadDataWithBaseURL(
-            "file:///android_res/drawable/",
-            html,
-            "text/html",
-            "utf-8",
-            null
+            "file:///android_res/drawable/", html, "text/html", "utf-8", null
         )
-        AlertDialog.Builder(this)
-            .setView(wv)
-            .setCancelable(true)
-            .setPositiveButton(R.string.ok) { dialog, _ -> dialog.dismiss() }
-            .show()
+        AlertDialog.Builder(this).setView(wv).setCancelable(true)
+            .setPositiveButton(R.string.ok) { dialog, _ -> dialog.dismiss() }.show()
     }
 
 
