@@ -5,7 +5,7 @@
     <string name="description">Sélectionnez le son et cliquez sur jouer</string>
     <string name="sound">Son</string>
     <string name="play">Jouer</string>
-    <string name="stop">Stop</string>
+    <string name="stop">Arrêt</string>
     <string name="ok">OK</string>
 
     <string name="sleepTimer">Minuterie</string>

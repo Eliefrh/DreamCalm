@@ -9,4 +9,5 @@ class MainActivityViewModel : ViewModel() {
     var frequenceChanged = false
     var recordingFilePath : String?= null
     var recordingElapsedTime : Long = 0
+    var isGridViewClickable: Boolean = true
 }

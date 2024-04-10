@@ -55,6 +55,7 @@ class MainActivity : AppCompatActivity() {
     private var bluetoothAdapter: BluetoothAdapter? = null
     lateinit var soundItems: List<SoundItem>
     lateinit var buttonPlay: Button
+    lateinit var gridviewSound: GridView
     private var isUserSelection = false
     private lateinit var mediaSession: MediaSession
     var countdownDuration = 60 * 1000L
@@ -128,8 +129,7 @@ class MainActivity : AppCompatActivity() {
         if (donnesVM.isPlaying) {
             val button = findViewById<Button>(R.id.button)
             button.setText(R.string.stop)
-            setControlsEnabled(false)
-
+            setControlsEnabled(true)
         }
 
         super.onStart()
@@ -164,17 +164,19 @@ class MainActivity : AppCompatActivity() {
 
         initializeApp()
 
-        val gridView = findViewById<GridView>(R.id.gridView)
+        gridviewSound= findViewById<GridView>(R.id.gridView)
         soundItems = _soundMap?.keys?.map { SoundItem(it) } ?: emptyList()
         val adapter = SoundAdapter(this, soundItems)
-        gridView.adapter = adapter
+        gridviewSound.adapter = adapter
         var playingMusicImg = findViewById<ImageView>(R.id.playingSound)
 
-        gridView.setOnItemClickListener { parent, view, position, id ->
-            buttonPlay.isEnabled = true
-            // Store the selected position in a variable
-            donnesVM.selectedImageposition = position
-            playingMusicImg.setImageResource(soundItems[position].imageResId)
+        gridviewSound.setOnItemClickListener { parent, view, position, id ->
+            if (donnesVM.isGridViewClickable) {
+                buttonPlay.isEnabled = true
+                // Store the selected position in a variable
+                donnesVM.selectedImageposition = position
+                playingMusicImg.setImageResource(soundItems[position].imageResId)
+            }
         }
         if (donnesVM.selectedImageposition != null) {
             playingMusicImg.setImageResource(soundItems[donnesVM.selectedImageposition!!].imageResId)
@@ -614,7 +616,8 @@ class MainActivity : AppCompatActivity() {
             }
             val button = findViewById<Button>(R.id.button)
             button.setText(R.string.stop)
-            setControlsEnabled(false)
+            donnesVM.isGridViewClickable = false
+
             if (_encodingProgress != null) {
                 _encodingProgress!!.hide()
                 _encodingProgress = null
@@ -623,7 +626,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun stopPlayback() {
-        Log.d("rien",donnesVM.frequenceChanged.toString())
         if (!donnesVM.frequenceChanged) {
             val serviceTimerStop = Intent(this@MainActivity, TimerService::class.java)
             startService(serviceTimerStop)
@@ -636,6 +638,7 @@ class MainActivity : AppCompatActivity() {
             val button = findViewById<Button>(R.id.button)
             button.setText(R.string.play)
             setControlsEnabled(true)
+            donnesVM.isGridViewClickable = true
         }
         // Stop the MediaPlayer
         mediaPlayer?.stop()
