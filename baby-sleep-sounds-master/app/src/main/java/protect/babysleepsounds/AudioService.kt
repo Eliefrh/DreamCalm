@@ -50,8 +50,6 @@ class AudioService : Service() {
                 stopForeground(true)
                 stopSelf()
             }
-            _mediaPlayer = LoopingAudioPlayer(this, File(audioFilename))
-            _mediaPlayer!!.start()
         } else {
 //            mediaPlayer?.stop()
 //            mediaPlayer?.reset()

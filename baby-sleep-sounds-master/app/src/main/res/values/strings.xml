@@ -40,6 +40,7 @@
     <string name="playbackNotSupported">Playback now supported, see logs for details</string>
     <string name="playbackFailure">Unable to play file, see logs for details</string>
     <string name="sleepTimerUpdated">Updated sleep timer</string>
+    <string name="recorded">Recorded a sound</string>
 
     <string name="theme">Theme</string>
 
@@ -60,4 +61,12 @@
     <string name="settings">Settings</string>
     <string name="theme_dark">Dark</string>
     <string name="theme_light">Light</string>
+    <string name="recentlyadded">Recently added:</string>
+    <string name="descriptionRecording">Record a sound</string>
+    <string name="descriptionUploading">Upload a sound</string>
+    <string name="saveFile">Save</string>
+    <string name="playSound">Play</string>
+    <string name="isRecordingText">Recording…</string>
+    <string name="boutonAppuyer">Apply</string>
+    <string name="action_add_own">Add your own</string>
 </resources>

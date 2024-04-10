@@ -12,5 +12,5 @@
         app:showAsAction="never"/>
     <item
         android:id="@+id/action_add_own"
-        android:title="Add your own" />
+        android:title="@string/action_add_own" />
 </menu>

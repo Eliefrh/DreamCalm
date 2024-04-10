@@ -1,8 +1,11 @@
 package protect.babysleepsounds
+
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.media.MediaRecorder
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.os.SystemClock
@@ -16,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -33,6 +37,8 @@ class RecordingUploadingActivity : AppCompatActivity() {
     private lateinit var buttonRecording : ImageButton
     private lateinit var buttonPlaySound: Button
     private lateinit var buttonSavingFile : Button
+    private lateinit var buttonSelectFile: ImageButton
+    private var selectedAudioUri: Uri? = null
 
     val donnesVM: MainActivityViewModel by viewModels()
 
@@ -52,6 +58,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
         buttonRecording= findViewById(R.id.recordingButton)
         buttonPlaySound = findViewById(R.id.playSound)
         buttonSavingFile = findViewById(R.id.saveFile)
+        buttonSelectFile = findViewById(R.id.uploadingButton)
         buttonPlaySound.isEnabled = false
         buttonSavingFile.isEnabled = false
         // Check if a recording is in progress
@@ -60,7 +67,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
             // Restore the recording file path and update UI accordingly
             outputFile = File(recordingFilePath)
             isRecordingText.visibility = TextView.VISIBLE
-            isRecordingText.text ="Recorded a sound"
+            isRecordingText.text =getString(R.string.recorded)
             chronometer.visibility = TextView.VISIBLE
             chronometer.base = SystemClock.elapsedRealtime() + donnesVM.recordingElapsedTime
             buttonPlaySound.isEnabled = true
@@ -76,15 +83,21 @@ class RecordingUploadingActivity : AppCompatActivity() {
             }
         }
         buttonPlaySound.setOnClickListener {
-
-            outputFile?.let { file ->
-                // Play the recorded audio
+            selectedAudioUri?.let { uri ->
+                val mediaPlayer = MediaPlayer().apply {
+                    setDataSource(this@RecordingUploadingActivity, uri)
+                    prepare()
+                    start()
+                    setOnCompletionListener {
+                        release()
+                    }
+                }
+            } ?: outputFile?.let { file ->
                 val mediaPlayer = MediaPlayer().apply {
                     setDataSource(file.absolutePath)
                     prepare()
                     start()
                     setOnCompletionListener {
-                        // Release the MediaPlayer resources when playback completes
                         release()
                     }
                 }
@@ -92,13 +105,17 @@ class RecordingUploadingActivity : AppCompatActivity() {
         }
         buttonSavingFile.setOnClickListener {
             saveRecording()
+            finish()
+
+        }
+        buttonSelectFile.setOnClickListener {
+            selectAudioFile()
         }
     }
 
     private fun startRecording() {
-
         isRecordingText.visibility = TextView.VISIBLE
-        isRecordingText.text ="Recording ..."
+        isRecordingText.text = getString(R.string.isRecordingText)
         chronometer.visibility = TextView.VISIBLE
 
         // Start the chronometer
@@ -124,6 +141,8 @@ class RecordingUploadingActivity : AppCompatActivity() {
         isRecording = true
     }
     private fun stopRecording() {
+        isRecordingText.text =getString(R.string.recorded)
+
         // Stop the chronometer
         chronometer.stop()
         mediaRecorder?.apply {
@@ -136,18 +155,37 @@ class RecordingUploadingActivity : AppCompatActivity() {
         buttonSavingFile.isEnabled = true
         donnesVM.recordingFilePath = outputFile?.absolutePath
         donnesVM.recordingElapsedTime = chronometer.base - SystemClock.elapsedRealtime()
+        selectedAudioUri = outputFile?.toUri()
     }
     private fun saveRecording() {
-        if (outputFile != null) {
-            // Implement saving logic here (e.g., copying the file to another directory)
-            // For example:
-            // val destinationFile = File(getExternalFilesDir(null), "my_recorded_audio.mp3")
-            // outputFile?.copyTo(destinationFile, overwrite = true)
-            Toast.makeText(this, "Recording saved", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, "No recording to save", Toast.LENGTH_SHORT).show()
+        val destinationDir = File(getExternalFilesDir(Environment.DIRECTORY_MUSIC),"SelectedSounds")
+        if (!destinationDir.exists()) {
+            destinationDir.mkdirs()
         }
+
+        selectedAudioUri?.let { uri ->
+            val inputStream = contentResolver.openInputStream(uri)
+            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val destinationFile = File(destinationDir, "SEL_$timeStamp.3gp")
+
+            inputStream?.use { input ->
+                destinationFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+            Toast.makeText(this, "Selected audio saved", Toast.LENGTH_SHORT).show()
+        }
+//        } ?: outputFile?.let { file ->
+//            // Implement saving logic here for the recorded audio
+//            // For example:
+//            // val destinationFile = File(getExternalFilesDir(null), "my_recorded_audio.mp3")
+//            // outputFile?.copyTo(destinationFile, overwrite = true)
+//            Toast.makeText(this, "Recording saved", Toast.LENGTH_SHORT).show()
+//        } ?: run {
+//            Toast.makeText(this, "No audio to save", Toast.LENGTH_SHORT).show()
+//        }
     }
+
 
     private fun getOutputMediaFile(): File {
         val mediaStorageDir = File(getExternalFilesDir(Environment.DIRECTORY_MUSIC), "MyRecordings")
@@ -156,6 +194,22 @@ class RecordingUploadingActivity : AppCompatActivity() {
         }
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         return File(mediaStorageDir.path + File.separator + "REC_$timeStamp.3gp")
+    }
+
+    private fun selectAudioFile() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+            type = "audio/*"
+        }
+        startActivityForResult(intent, 123)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 123 && resultCode == RESULT_OK) {
+            selectedAudioUri = data?.data
+            buttonPlaySound.isEnabled = true
+            buttonSavingFile.isEnabled = true
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
