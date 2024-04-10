@@ -43,10 +43,28 @@
         android:numColumns="3"
         android:padding="8dp"
         android:verticalSpacing="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/recentlyadded"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
         app:layout_constraintWidth_percent="0.5" />
+
+    <TextView
+        android:id="@+id/recentlyadded"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/recentlyadded"
+        app:layout_constraintBottom_toTopOf="@+id/gridView_ajoute"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.75"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <GridView
+        android:id="@+id/gridView_ajoute"
+        android:layout_width="0dp"
+        android:layout_height="100dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.5"/>
 
     <TextView
         android:id="@+id/sleep_timer_label"
