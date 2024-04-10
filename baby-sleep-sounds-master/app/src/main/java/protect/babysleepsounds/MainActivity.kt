@@ -44,8 +44,7 @@ import java.util.LinkedList
 
 
 data class SoundItem(val imageResId: Int)
-data class AddedSoundItem(val imageResId: Int)
-
+data class AddedSoundItem(val imageResId: Int, val path : String)
 
 class MainActivity : AppCompatActivity() {
     val donnesVM: MainActivityViewModel by viewModels()
@@ -56,7 +55,7 @@ class MainActivity : AppCompatActivity() {
     private var _encodingProgress: ProgressDialog? = null
     private var bluetoothAdapter: BluetoothAdapter? = null
     lateinit var soundItems: List<SoundItem>
-    private var addedSoundItem = mutableListOf<AddedSoundItem>()
+    private var addedSoundItem: MutableList<AddedSoundItem> = mutableListOf()
     private var isUserSelection = false
     private lateinit var mediaSession: MediaSession
     var countdownDuration = 60 * 1000L
@@ -126,6 +125,7 @@ class MainActivity : AppCompatActivity() {
         registerReceiver(timerFinishReceiver, IntentFilter("TIMER_FINISH"))
         val startIntentMedia = Intent(this@MainActivity, MediaPlaybackService::class.java)
         startService(startIntentMedia)
+        scanSoundFolder()
 
 
         if (donnesVM.isPlaying) {
@@ -232,7 +232,13 @@ class MainActivity : AppCompatActivity() {
 
             if (donnesVM.selectedImageposition != null) {
                 if (!donnesVM.isPlaying) {
-                    startPlayback()
+                    if (choosedGrid == 1){
+                        startPlayback()
+
+                    }
+                    if (choosedGrid ==2 ){
+                        startAddedPlayback(donnesVM.selectedImageposition as Int)
+                    }
                 } else {
                     stopPlayback()
                 }
@@ -443,6 +449,15 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private fun startAddedPlayback(position : Int){
+        val startIntent = Intent(this@MainActivity, AudioService::class.java)
+        startIntent.putExtra(
+            AudioService.AUDIO_FILENAME_ARG,
+            addedSoundItem[position].path
+        )
+        startService(startIntent)
+        updateToPlaying()
+    }
     /**
      * Write a resource to a file
      * @param resource resource to write
@@ -606,15 +621,17 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun scanSoundFolder() {
-        val soundDirectory =
-            File("/storage/emulated/0/Android/data/protect.babysleepsounds/files/Music/SelectedSounds")
+        val soundDirectory = File("/storage/emulated/0/Android/data/protect.babysleepsounds/files/Music/SelectedSounds")
         val soundFiles = soundDirectory.listFiles { dir, name -> name.endsWith(".3gp") }
         val addedGridView = findViewById<GridView>(R.id.gridView_ajoute)
 
+        // Initialize addedSoundItem as an empty list
+        addedSoundItem = mutableListOf()
+
         if (soundFiles != null) {
             for (soundFile in soundFiles) {
-                val imageResId = R.mipmap.ic_launcher
-                val addedSound = AddedSoundItem(imageResId)
+                // Use the actual path of the sound file for AddedSoundItem
+                val addedSound = AddedSoundItem(R.mipmap.ic_launcher, soundFile.absolutePath)
                 addedSoundItem.add(addedSound)
             }
         }
@@ -625,7 +642,6 @@ class MainActivity : AppCompatActivity() {
         // Notify the adapter that the data set has changed
         addedAdapter.notifyDataSetChanged()
     }
-
     private fun displayAboutDialog() {
         val USED_LIBRARIES: Map<String, String> = ImmutableMap.of(
             "FFmpeg",
