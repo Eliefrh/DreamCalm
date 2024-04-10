@@ -54,6 +54,7 @@ class MainActivity : AppCompatActivity() {
     private var _encodingProgress: ProgressDialog? = null
     private var bluetoothAdapter: BluetoothAdapter? = null
     lateinit var soundItems: List<SoundItem>
+    lateinit var buttonPlay: Button
     private var isUserSelection = false
     private lateinit var mediaSession: MediaSession
     var countdownDuration = 60 * 1000L
@@ -144,6 +145,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         checkPermissions()
         sleepTimeoutSpinner = findViewById(R.id.sleepTimerSpinner)
+        buttonPlay = findViewById(R.id.button)
 
         val filesDir = filesDir
 
@@ -169,12 +171,16 @@ class MainActivity : AppCompatActivity() {
         var playingMusicImg = findViewById<ImageView>(R.id.playingSound)
 
         gridView.setOnItemClickListener { parent, view, position, id ->
+            buttonPlay.isEnabled = true
             // Store the selected position in a variable
             donnesVM.selectedImageposition = position
             playingMusicImg.setImageResource(soundItems[position].imageResId)
         }
         if (donnesVM.selectedImageposition != null) {
             playingMusicImg.setImageResource(soundItems[donnesVM.selectedImageposition!!].imageResId)
+        }
+        if(donnesVM.selectedImageposition!=null){
+            buttonPlay.isEnabled = true
         }
         val sleepTimeoutSpinner = findViewById<Spinner>(R.id.sleepTimerSpinner)
         val times: List<String> = _timeMap?.keys?.toList() ?: emptyList()
@@ -214,8 +220,7 @@ class MainActivity : AppCompatActivity() {
         volumeControlStream = AudioManager.STREAM_MUSIC
 
 
-        val button = findViewById<Button>(R.id.button)
-        button.setOnClickListener {
+        buttonPlay.setOnClickListener {
 //            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
 //        if()
             if (donnesVM.selectedImageposition != null) {
@@ -236,7 +241,7 @@ class MainActivity : AppCompatActivity() {
         File(getExternalFilesDir(null), "files/ffmpeg").setExecutable(true)
 
         if (_ffmpeg is FFmpeg && _ffmpeg!!.isSupported()) {
-            button.isEnabled = true
+            //button.isEnabled = true
         } else {
             Log.d(TAG, "ffmpeg not supported")
             reportPlaybackUnsupported()
@@ -251,7 +256,7 @@ class MainActivity : AppCompatActivity() {
         ffmpegFile.setExecutable(true)
 
         if (_ffmpeg is FFmpeg && _ffmpeg!!.isSupported()) {
-            button.isEnabled = true
+            //button.isEnabled = true
         } else {
             Log.d(TAG, "ffmpeg not supported")
             reportPlaybackUnsupported()
