@@ -1,7 +1,9 @@
 package protect.babysleepsounds
 
 import android.app.Service
+import android.content.Context
 import android.content.Intent
+import android.media.AudioManager
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
@@ -16,7 +18,7 @@ import java.io.File
 class AudioService : Service() {
     private var _mediaPlayer: LoopingAudioPlayer? = null
     public lateinit var exoPlayer: SimpleExoPlayer
-
+    var audioFilename :String? = null
     override fun onBind(intent: Intent): IBinder? {
         // Used only in case of bound services.
         return null
@@ -28,56 +30,87 @@ class AudioService : Service() {
         exoPlayer.repeatMode = Player.REPEAT_MODE_ONE
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        val audioFilename = intent.getStringExtra(AUDIO_FILENAME_ARG)
+    private val audioManager: AudioManager by lazy {
+        getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    }
 
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
-
-
-            if (audioFilename != null) {
-                Log.i(TAG, "Received intent to start playback")
+    private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
+        when (focusChange) {
+            AudioManager.AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                // The service has lost focus, stop playback
+                if (_mediaPlayer != null) {
+                    _mediaPlayer!!.stop()
+                    _mediaPlayer = null
+                }
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
+                    exoPlayer.stop()
+                }
+            }
+            AudioManager.AUDIOFOCUS_GAIN -> {
+                // The service has regained focus, resume playback
                 if (_mediaPlayer != null) {
                     _mediaPlayer!!.stop()
                 }
                 _mediaPlayer = LoopingAudioPlayer(this, File(audioFilename))
                 _mediaPlayer!!.start()
-            } else {
-                Log.i(TAG, "Received intent to stop playback")
-                if (_mediaPlayer != null) {
-                    _mediaPlayer!!.stop()
-                    _mediaPlayer = null
+
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
+                    exoPlayer.playWhenReady = true
                 }
-                stopForeground(true)
-                stopSelf()
             }
-        } else {
-//            mediaPlayer?.stop()
-//            mediaPlayer?.reset()
-//
-//            mediaPlayer = MediaPlayer()
-//            if (audioFilename != null) {
-//                mediaPlayer?.setDataSource(this, audioFilename.toUri())
-//            }
-//            mediaPlayer?.prepare()
-//            mediaPlayer?.start()
-//            mediaPlayer?.start()
-//            val audioUri = audioFilename?.toUri()
-//            val mediaItem = MediaItem.fromUri(audioUri!!)
-            val dataSourceFactory = DefaultDataSourceFactory(this, "exoplayer-sample")
-            val audioSource = audioFilename?.toUri()?.let { MediaItem.fromUri(it) }?.let {
-                ProgressiveMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(it)
+            else -> {
             }
-            if (audioSource != null) {
-                exoPlayer.prepare(audioSource)
+        }
+    }
+
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        audioFilename = intent.getStringExtra(AUDIO_FILENAME_ARG)
+        var result = 0
+        // Request audio focus
+        if(audioFilename != null){
+        result = audioManager.requestAudioFocus(
+            audioFocusChangeListener,
+            AudioManager.STREAM_MUSIC,
+            AudioManager.AUDIOFOCUS_GAIN
+        )}
+
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+
+
+                if (audioFilename != null && result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                    Log.i(TAG, "Received intent to start playback")
+                    if (_mediaPlayer != null) {
+                        _mediaPlayer!!.stop()
+                    }
+                    _mediaPlayer = LoopingAudioPlayer(this, File(audioFilename))
+                    _mediaPlayer!!.start()
+                } else if(audioFilename == null) {
+                    Log.i(TAG, "Received intent to stop playback")
+                    if (_mediaPlayer != null) {
+                        _mediaPlayer!!.stop()
+                        _mediaPlayer = null
+                    }
+                    stopForeground(true)
+                    stopSelf()
+                }
             } else {
-                exoPlayer!!.stop()
+
+                val dataSourceFactory = DefaultDataSourceFactory(this, "exoplayer-sample")
+                val audioSource = audioFilename?.toUri()?.let { MediaItem.fromUri(it) }?.let {
+                    ProgressiveMediaSource.Factory(dataSourceFactory)
+                        .createMediaSource(it)
+                }
+                if (audioSource != null && result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                    exoPlayer.prepare(audioSource)
+                } else if(audioSource == null) {
+                    exoPlayer!!.stop()
 //                _mediaPlayer = null
 
-                stopForeground(true)
-                stopSelf()
-            }
-            exoPlayer.playWhenReady = true
+                    stopForeground(true)
+                    stopSelf()
+                }
+                exoPlayer.playWhenReady = true
+
 
         }
 
@@ -96,6 +129,8 @@ class AudioService : Service() {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
             exoPlayer.release()
         }
+        // Abandon audio focus when playback stops
+        audioManager.abandonAudioFocus(audioFocusChangeListener)
         super.onDestroy()
     }
 
