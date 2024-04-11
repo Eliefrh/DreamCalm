@@ -64,60 +64,54 @@ class AudioService : Service() {
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        audioFilename = intent.getStringExtra(AUDIO_FILENAME_ARG)
-        var result = 0
-        // Request audio focus
-        if(audioFilename != null){
-        result = audioManager.requestAudioFocus(
-            audioFocusChangeListener,
-            AudioManager.STREAM_MUSIC,
-            AudioManager.AUDIOFOCUS_GAIN
-        )}
+        val audioFilename = intent.getStringExtra(AUDIO_FILENAME_ARG)
 
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q &&
+            !(audioFilename?.startsWith("/storage/emulated/0/Android/data/protect.babysleepsounds/files/Music/SelectedSounds") == true)
+        ) {
 
-
-                if (audioFilename != null && result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-                    Log.i(TAG, "Received intent to start playback")
-                    if (_mediaPlayer != null) {
-                        _mediaPlayer!!.stop()
-                    }
-                    _mediaPlayer = LoopingAudioPlayer(this, File(audioFilename))
-                    _mediaPlayer!!.start()
-                } else if(audioFilename == null) {
-                    Log.i(TAG, "Received intent to stop playback")
-                    if (_mediaPlayer != null) {
-                        _mediaPlayer!!.stop()
-                        _mediaPlayer = null
-                    }
-                    stopForeground(true)
-                    stopSelf()
+            if (audioFilename != null) {
+                Log.i(TAG, "Received intent to start playback")
+                if (_mediaPlayer != null) {
+                    _mediaPlayer!!.stop()
                 }
+                _mediaPlayer = LoopingAudioPlayer(this, File(audioFilename))
+                _mediaPlayer!!.start()
             } else {
-
-                val dataSourceFactory = DefaultDataSourceFactory(this, "exoplayer-sample")
-                val audioSource = audioFilename?.toUri()?.let { MediaItem.fromUri(it) }?.let {
-                    ProgressiveMediaSource.Factory(dataSourceFactory)
-                        .createMediaSource(it)
+                Log.i(TAG, "Received intent to stop playback")
+                if (_mediaPlayer != null ) {
+                    _mediaPlayer!!.stop()
+                    _mediaPlayer = null
                 }
-                if (audioSource != null && result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-                    exoPlayer.prepare(audioSource)
-                } else if(audioSource == null) {
+                if (exoPlayer != null){
                     exoPlayer!!.stop()
+                }
+                stopForeground(true)
+                stopSelf()
+            }
+        } else {
+
+            val dataSourceFactory = DefaultDataSourceFactory(this, "exoplayer-sample")
+            val audioSource = audioFilename?.toUri()?.let { MediaItem.fromUri(it) }?.let {
+                ProgressiveMediaSource.Factory(dataSourceFactory)
+                    .createMediaSource(it)
+            }
+            if (audioSource != null) {
+                exoPlayer.prepare(audioSource)
+            } else {
+                exoPlayer!!.stop()
 //                _mediaPlayer = null
 
-                    stopForeground(true)
-                    stopSelf()
-                }
-                exoPlayer.playWhenReady = true
-
+                stopForeground(true)
+                stopSelf()
+            }
+            exoPlayer.playWhenReady = true
 
         }
 
         // If this service is killed, let is remain dead until explicitly started again.
         return START_NOT_STICKY
     }
-
 
     override fun onDestroy() {
         if (_mediaPlayer != null) {
