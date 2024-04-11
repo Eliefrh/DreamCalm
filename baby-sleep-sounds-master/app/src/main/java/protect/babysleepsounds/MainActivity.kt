@@ -188,12 +188,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         addedGridView.setOnItemClickListener { parent, view, position, id ->
-            // Store the selected position in a variable
+            if (donnesVM.isGridViewClickable) {
+                // Store the selected position in a variable
             donnesVM.selectedImageposition = position
             playingMusicImg.setImageResource(addedSoundItem[position].imageResId)
             choosedGrid = 2
         }
-
+        }
 
         if (donnesVM.selectedImageposition != null) {
             playingMusicImg.setImageResource(soundItems[donnesVM.selectedImageposition!!].imageResId)
