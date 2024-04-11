@@ -119,8 +119,6 @@ class AudioService : Service() {
     }
 
 
-
-
     override fun onDestroy() {
         if (_mediaPlayer != null) {
             _mediaPlayer!!.stop()
@@ -140,5 +138,6 @@ class AudioService : Service() {
         private const val TAG = "BabySleepSounds"
         const val AUDIO_FILENAME_ARG = "AUDIO_FILENAME_ARG"
         const val ACTION_PLAY = "protect.babysleepsounds.action.PLAY"
-        const val ACTION_PAUSE = "protect.babysleepsounds.action.PAUSE" }
+        const val ACTION_PAUSE = "protect.babysleepsounds.action.PAUSE"
+    }
 }
