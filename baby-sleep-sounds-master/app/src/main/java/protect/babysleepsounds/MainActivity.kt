@@ -44,12 +44,13 @@ import java.util.LinkedList
 
 
 data class SoundItem(val imageResId: Int)
-data class AddedSoundItem(val imageResId: Int, val path : String)
+data class AddedSoundItem(val imageResId: Int, val path: String)
 
 class MainActivity : AppCompatActivity() {
     val donnesVM: MainActivityViewModel by viewModels()
     private var _soundMap: Map<Int, Int>? = null
-    private var _addedSoundMap: Map<Int, String>? = null
+
+    //    private var _addedSoundMap: Map<Int, String>? = null
     private var _timeMap: Map<String, Int>? = null
     private var _ffmpeg: FFmpeg? = null
     private var _encodingProgress: ProgressDialog? = null
@@ -57,7 +58,8 @@ class MainActivity : AppCompatActivity() {
     lateinit var soundItems: List<SoundItem>
     private var addedSoundItem: MutableList<AddedSoundItem> = mutableListOf()
     private var isUserSelection = false
-    private lateinit var mediaSession: MediaSession
+
+    //    private lateinit var mediaSession: MediaSession
     var countdownDuration = 60 * 1000L
     var timeLeftInMillis: Long = 0
     lateinit var sleepTimeoutSpinner: Spinner
@@ -232,11 +234,11 @@ class MainActivity : AppCompatActivity() {
 
             if (donnesVM.selectedImageposition != null) {
                 if (!donnesVM.isPlaying) {
-                    if (choosedGrid == 1){
+                    if (choosedGrid == 1) {
                         startPlayback()
 
                     }
-                    if (choosedGrid ==2 ){
+                    if (choosedGrid == 2) {
                         startAddedPlayback(donnesVM.selectedImageposition as Int)
                     }
                 } else {
@@ -346,10 +348,6 @@ class MainActivity : AppCompatActivity() {
                 .put(resources.getString(R.string.time_4hour), 1000 * 60 * 60 * 4)
                 .put(resources.getString(R.string.time_8hour), 1000 * 60 * 60 * 8).build()
 
-
-//        _addedSoundMap = ImmutableMap.builder<Int,String>()
-//            .put(R.mipmap.ic_launcher,)
-
     }
 
     /**
@@ -449,7 +447,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun startAddedPlayback(position : Int){
+    private fun startAddedPlayback(position: Int) {
         val startIntent = Intent(this@MainActivity, AudioService::class.java)
         startIntent.putExtra(
             AudioService.AUDIO_FILENAME_ARG,
@@ -458,6 +456,7 @@ class MainActivity : AppCompatActivity() {
         startService(startIntent)
         updateToPlaying()
     }
+
     /**
      * Write a resource to a file
      * @param resource resource to write
@@ -621,7 +620,8 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun scanSoundFolder() {
-        val soundDirectory = File("/storage/emulated/0/Android/data/protect.babysleepsounds/files/Music/SelectedSounds")
+        val soundDirectory =
+            File("/storage/emulated/0/Android/data/protect.babysleepsounds/files/Music/SelectedSounds")
         val soundFiles = soundDirectory.listFiles { dir, name -> name.endsWith(".3gp") }
         val addedGridView = findViewById<GridView>(R.id.gridView_ajoute)
 
@@ -642,6 +642,7 @@ class MainActivity : AppCompatActivity() {
         // Notify the adapter that the data set has changed
         addedAdapter.notifyDataSetChanged()
     }
+
     private fun displayAboutDialog() {
         val USED_LIBRARIES: Map<String, String> = ImmutableMap.of(
             "FFmpeg",

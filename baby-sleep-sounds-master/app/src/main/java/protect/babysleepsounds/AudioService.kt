@@ -31,8 +31,9 @@ class AudioService : Service() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         val audioFilename = intent.getStringExtra(AUDIO_FILENAME_ARG)
 
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
-
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q &&
+            !(audioFilename?.startsWith("/storage/emulated/0/Android/data/protect.babysleepsounds/files/Music/SelectedSounds") == true)
+        ) {
 
             if (audioFilename != null) {
                 Log.i(TAG, "Received intent to start playback")
@@ -43,26 +44,18 @@ class AudioService : Service() {
                 _mediaPlayer!!.start()
             } else {
                 Log.i(TAG, "Received intent to stop playback")
-                if (_mediaPlayer != null) {
+                if (_mediaPlayer != null ) {
                     _mediaPlayer!!.stop()
                     _mediaPlayer = null
+                }
+                if (exoPlayer != null){
+                    exoPlayer!!.stop()
                 }
                 stopForeground(true)
                 stopSelf()
             }
         } else {
-//            mediaPlayer?.stop()
-//            mediaPlayer?.reset()
-//
-//            mediaPlayer = MediaPlayer()
-//            if (audioFilename != null) {
-//                mediaPlayer?.setDataSource(this, audioFilename.toUri())
-//            }
-//            mediaPlayer?.prepare()
-//            mediaPlayer?.start()
-//            mediaPlayer?.start()
-//            val audioUri = audioFilename?.toUri()
-//            val mediaItem = MediaItem.fromUri(audioUri!!)
+
             val dataSourceFactory = DefaultDataSourceFactory(this, "exoplayer-sample")
             val audioSource = audioFilename?.toUri()?.let { MediaItem.fromUri(it) }?.let {
                 ProgressiveMediaSource.Factory(dataSourceFactory)
@@ -86,8 +79,6 @@ class AudioService : Service() {
     }
 
 
-
-
     override fun onDestroy() {
         if (_mediaPlayer != null) {
             _mediaPlayer!!.stop()
@@ -105,5 +96,6 @@ class AudioService : Service() {
         private const val TAG = "BabySleepSounds"
         const val AUDIO_FILENAME_ARG = "AUDIO_FILENAME_ARG"
         const val ACTION_PLAY = "protect.babysleepsounds.action.PLAY"
-        const val ACTION_PAUSE = "protect.babysleepsounds.action.PAUSE" }
+        const val ACTION_PAUSE = "protect.babysleepsounds.action.PAUSE"
+    }
 }
