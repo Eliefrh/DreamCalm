@@ -12,6 +12,9 @@ import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -32,6 +35,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.google.common.collect.ImmutableMap
 import nl.bravobit.ffmpeg.ExecuteBinaryResponseHandler
 import nl.bravobit.ffmpeg.FFmpeg
@@ -651,6 +655,20 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
+        val theme = Preferences[this]?.theme
+
+        for (i in 0 until menu.size()) {
+            val menuItem = menu.getItem(i)
+            val itemTitle = menuItem.title.toString()
+            val textColor = if (theme == Preferences.THEME_LIGHT) {
+                R.color.menuItemTextColorLight // Define your light theme text color here
+            } else {
+                R.color.menuItemTextColorDark // Define your dark theme text color here
+            }
+            menuItem.title = SpannableString(itemTitle).apply {
+                setSpan(ForegroundColorSpan(ContextCompat.getColor(this@MainActivity, textColor)), 0, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+        }
         return super.onCreateOptionsMenu(menu)
     }
 

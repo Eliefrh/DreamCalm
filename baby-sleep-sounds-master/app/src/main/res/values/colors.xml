@@ -4,5 +4,6 @@
     <color name="colorPrimaryPale">#586DE3</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
-
+    <color name="menuItemTextColorLight">#000000</color> <!-- Example light theme text color -->
+    <color name="menuItemTextColorDark">#FFFFFF</color> <!-- Example dark theme text color -->
 </resources>
