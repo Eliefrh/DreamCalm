@@ -20,6 +20,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import org.w3c.dom.Text
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -34,11 +35,13 @@ class RecordingUploadingActivity : AppCompatActivity() {
     private lateinit var isRecordingText: TextView
     private lateinit var timerText: TextView
     private lateinit var chronometer: Chronometer
-    private lateinit var buttonRecording : ImageButton
+    private lateinit var buttonRecording: ImageButton
     private lateinit var buttonPlaySound: Button
-    private lateinit var buttonSavingFile : Button
+    private lateinit var buttonSavingFile: Button
     private lateinit var buttonSelectFile: ImageButton
     private var selectedAudioUri: Uri? = null
+    private lateinit var playText: TextView
+    private var mediaPlayer: MediaPlayer? = null
 
     val donnesVM: MainActivityViewModel by viewModels()
 
@@ -49,25 +52,41 @@ class RecordingUploadingActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
 
         // Check for required permissions
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE), 123)
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.RECORD_AUDIO,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ),
+                123
+            )
         }
         isRecordingText = findViewById(R.id.isRecordingText)
         chronometer = findViewById(R.id.chronometer)
-        buttonRecording= findViewById(R.id.recordingButton)
+        buttonRecording = findViewById(R.id.recordingButton)
         buttonPlaySound = findViewById(R.id.playSound)
         buttonSavingFile = findViewById(R.id.saveFile)
         buttonSelectFile = findViewById(R.id.uploadingButton)
         buttonPlaySound.isEnabled = false
         buttonSavingFile.isEnabled = false
+        playText = findViewById(R.id.playSound)
+        playText.setText("Play")
         // Check if a recording is in progress
         val recordingFilePath = donnesVM.recordingFilePath
         if (!recordingFilePath.isNullOrEmpty()) {
             // Restore the recording file path and update UI accordingly
             outputFile = File(recordingFilePath)
             isRecordingText.visibility = TextView.VISIBLE
-            isRecordingText.text =getString(R.string.recorded)
+            isRecordingText.text = getString(R.string.recorded)
             chronometer.visibility = TextView.VISIBLE
             chronometer.base = SystemClock.elapsedRealtime() + donnesVM.recordingElapsedTime
             buttonPlaySound.isEnabled = true
@@ -75,30 +94,52 @@ class RecordingUploadingActivity : AppCompatActivity() {
         }
         buttonRecording.setOnClickListener {
             if (!isRecording) {
-                buttonRecording.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary))
+                buttonRecording.setBackgroundColor(
+                    ContextCompat.getColor(
+                        this,
+                        R.color.colorPrimary
+                    )
+                )
                 startRecording()
             } else {
-                buttonRecording.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimaryPale))
+                buttonRecording.setBackgroundColor(
+                    ContextCompat.getColor(
+                        this,
+                        R.color.colorPrimaryPale
+                    )
+                )
                 stopRecording()
             }
         }
         buttonPlaySound.setOnClickListener {
-            selectedAudioUri?.let { uri ->
-                val mediaPlayer = MediaPlayer().apply {
-                    setDataSource(this@RecordingUploadingActivity, uri)
-                    prepare()
-                    start()
-                    setOnCompletionListener {
-                        release()
+            if (mediaPlayer != null && mediaPlayer!!.isPlaying) {
+                mediaPlayer!!.stop()
+                mediaPlayer!!.release()
+                mediaPlayer = null
+                playText.text = "Play"
+            } else {
+                playText.text = "Stop"
+                selectedAudioUri?.let { uri ->
+                    mediaPlayer = MediaPlayer().apply {
+                        setDataSource(this@RecordingUploadingActivity, uri)
+                        prepare()
+                        start()
+                        setOnCompletionListener {
+                            release()
+                            mediaPlayer = null
+                            playText.text = "Play"
+                        }
                     }
-                }
-            } ?: outputFile?.let { file ->
-                val mediaPlayer = MediaPlayer().apply {
-                    setDataSource(file.absolutePath)
-                    prepare()
-                    start()
-                    setOnCompletionListener {
-                        release()
+                } ?: outputFile?.let { file ->
+                    mediaPlayer = MediaPlayer().apply {
+                        setDataSource(file.absolutePath)
+                        prepare()
+                        start()
+                        setOnCompletionListener {
+                            release()
+                            mediaPlayer = null
+                            playText.text = "Play"
+                        }
                     }
                 }
             }
@@ -106,7 +147,12 @@ class RecordingUploadingActivity : AppCompatActivity() {
         buttonSavingFile.setOnClickListener {
             saveRecording()
             finish()
-
+            if (mediaPlayer != null && mediaPlayer!!.isPlaying) {
+                mediaPlayer!!.stop()
+                mediaPlayer!!.release()
+                mediaPlayer = null
+                playText.text = "Play"
+            }
         }
         buttonSelectFile.setOnClickListener {
             selectAudioFile()
@@ -134,14 +180,19 @@ class RecordingUploadingActivity : AppCompatActivity() {
                 prepare()
                 start()
             } catch (e: IOException) {
-                Toast.makeText(this@RecordingUploadingActivity, "Failed to start recording", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@RecordingUploadingActivity,
+                    "Failed to start recording",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
         isRecording = true
     }
+
     private fun stopRecording() {
-        isRecordingText.text =getString(R.string.recorded)
+        isRecordingText.text = getString(R.string.recorded)
 
         // Stop the chronometer
         chronometer.stop()
@@ -157,12 +208,13 @@ class RecordingUploadingActivity : AppCompatActivity() {
         donnesVM.recordingElapsedTime = chronometer.base - SystemClock.elapsedRealtime()
         selectedAudioUri = outputFile?.toUri()
     }
+
     private fun saveRecording() {
-        val destinationDir = File(getExternalFilesDir(Environment.DIRECTORY_MUSIC),"SelectedSounds")
+        val destinationDir =
+            File(getExternalFilesDir(Environment.DIRECTORY_MUSIC), "SelectedSounds")
         if (!destinationDir.exists()) {
             destinationDir.mkdirs()
         }
-
         selectedAudioUri?.let { uri ->
             val inputStream = contentResolver.openInputStream(uri)
             val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
@@ -174,16 +226,8 @@ class RecordingUploadingActivity : AppCompatActivity() {
                 }
             }
             Toast.makeText(this, "Selected audio saved", Toast.LENGTH_SHORT).show()
+
         }
-//        } ?: outputFile?.let { file ->
-//            // Implement saving logic here for the recorded audio
-//            // For example:
-//            // val destinationFile = File(getExternalFilesDir(null), "my_recorded_audio.mp3")
-//            // outputFile?.copyTo(destinationFile, overwrite = true)
-//            Toast.makeText(this, "Recording saved", Toast.LENGTH_SHORT).show()
-//        } ?: run {
-//            Toast.makeText(this, "No audio to save", Toast.LENGTH_SHORT).show()
-//        }
     }
 
 
@@ -214,8 +258,18 @@ class RecordingUploadingActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        if(isRecording) {
+        if (isRecording) {
             stopRecording()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (mediaPlayer != null && mediaPlayer!!.isPlaying) {
+            mediaPlayer!!.stop()
+            mediaPlayer!!.release()
+            mediaPlayer = null
+            playText.text = "Play"
         }
     }
 }

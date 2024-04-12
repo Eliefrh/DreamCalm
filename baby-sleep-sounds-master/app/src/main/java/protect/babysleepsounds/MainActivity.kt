@@ -167,7 +167,7 @@ class MainActivity : AppCompatActivity() {
         initializeApp()
         scanSoundFolder()
 
-        gridviewSound= findViewById<GridView>(R.id.gridView)
+        gridviewSound = findViewById<GridView>(R.id.gridView)
         soundItems = _soundMap?.keys?.map { SoundItem(it) } ?: emptyList()
         val adapter = SoundAdapter(this, soundItems)
         gridviewSound.adapter = adapter
@@ -185,23 +185,23 @@ class MainActivity : AppCompatActivity() {
                 // Store the selected position in a variable
                 donnesVM.selectedImageposition = position
                 playingMusicImg.setImageResource(soundItems[position].imageResId)
-            choosedGrid = 1
+                choosedGrid = 1
             }
         }
 
         addedGridView.setOnItemClickListener { parent, view, position, id ->
             if (donnesVM.isGridViewClickable) {
                 // Store the selected position in a variable
-            donnesVM.selectedImageposition = position
-            playingMusicImg.setImageResource(addedSoundItem[position].imageResId)
-            choosedGrid = 2
-        }
+                donnesVM.selectedImageposition = position
+                playingMusicImg.setImageResource(addedSoundItem[position].imageResId)
+                choosedGrid = 2
+            }
         }
 
         if (donnesVM.selectedImageposition != null) {
             playingMusicImg.setImageResource(soundItems[donnesVM.selectedImageposition!!].imageResId)
         }
-        if(donnesVM.selectedImageposition!=null){
+        if (donnesVM.selectedImageposition != null) {
             buttonPlay.isEnabled = true
         }
         val sleepTimeoutSpinner = findViewById<Spinner>(R.id.sleepTimerSpinner)
