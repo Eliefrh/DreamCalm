@@ -81,7 +81,13 @@ class MainActivity : AppCompatActivity() {
             if (donnesVM.isPlaying) {
                 donnesVM.frequenceChanged = true
                 stopPlayback()
-                startPlayback()
+                if (donnesVM.choosedGrid == 1) {
+                    startPlayback()
+
+                }
+                if (donnesVM.choosedGrid == 2) {
+                    startAddedPlayback(donnesVM.selectedImageposition as Int)
+                }
             }
         }
     }
@@ -92,7 +98,13 @@ class MainActivity : AppCompatActivity() {
                 if (donnesVM.isPlaying) {
                     stopPlayback()
                 } else {
-                    startPlayback()
+                    if (donnesVM.choosedGrid == 1) {
+                        startPlayback()
+
+                    }
+                    if (donnesVM.choosedGrid == 2) {
+                        startAddedPlayback(donnesVM.selectedImageposition as Int)
+                    }
                 }
             }
 
@@ -651,6 +663,10 @@ class MainActivity : AppCompatActivity() {
             displayAboutDialog()
             return true
         } else if (id == R.id.action_add_own) {
+            if(donnesVM.isPlaying){
+                stopPlayback()
+            }
+            stopPlayback()
             startActivity(Intent(this, RecordingUploadingActivity::class.java))
             return true
         }
