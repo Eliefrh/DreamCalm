@@ -666,7 +666,6 @@ class MainActivity : AppCompatActivity() {
             if(donnesVM.isPlaying){
                 stopPlayback()
             }
-            stopPlayback()
             startActivity(Intent(this, RecordingUploadingActivity::class.java))
             return true
         }
