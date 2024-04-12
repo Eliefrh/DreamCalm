@@ -79,7 +79,7 @@
         android:verticalSpacing="8dp"
         app:layout_constraintBottom_toTopOf="@+id/recentlyadded"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.25"
+        app:layout_constraintHeight_percent="0.30"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -92,7 +92,6 @@
         android:text="@string/sleepTimer"
         android:textSize="16.0sp"
         android:textStyle="bold"
-        app:layout_constraintWidth_percent="0.25"
         app:layout_constraintBottom_toTopOf="@+id/button"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -120,8 +119,8 @@
 
     <ImageView
         android:id="@+id/playingSound"
-        android:layout_width="132dp"
-        android:layout_height="129dp"
+        android:layout_width="103dp"
+        android:layout_height="90dp"
         app:layout_constraintBottom_toTopOf="@+id/sleepTimerSpinner"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.508"
@@ -142,9 +141,10 @@
     <GridView
         android:id="@+id/gridView_ajoute"
         android:layout_width="0dp"
-        android:layout_height="100dp"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.30"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent" />
 
