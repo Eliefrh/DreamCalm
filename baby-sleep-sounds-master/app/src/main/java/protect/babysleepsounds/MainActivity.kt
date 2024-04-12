@@ -194,7 +194,37 @@ class MainActivity : AppCompatActivity() {
             playingMusicImg.setImageResource(addedSoundItem[position].imageResId)
                 donnesVM.choosedGrid = 2
         }
-        }
+
+        //Press and hold to delete the selected sound
+        addedGridView.onItemLongClickListener =
+            AdapterView.OnItemLongClickListener { parent, view, position, id ->
+                val path: String = addedSoundItem[position].path
+
+                val alertDialogBuilder = AlertDialog.Builder(this@MainActivity)
+                alertDialogBuilder.setTitle("Confirm Deletion")
+                alertDialogBuilder.setMessage("Are you sure you want to delete this sound?")
+                alertDialogBuilder.setPositiveButton("Yes") { dialog, which ->
+                    // Effacer du path original
+                    val file = File(path)
+                    if (file.exists()) {
+                        file.delete()
+                    }
+
+                    //effacer du gridView
+                    addedSoundItem.removeAt(position)
+                    scanSoundFolder()
+                }
+                alertDialogBuilder.setNegativeButton("No") { dialog, which ->
+                    //on ne fait rien
+                }
+
+                // affichage du dialog
+                alertDialogBuilder.create().show()
+
+                true // Return true to consume the long click event
+            }
+
+
 
         if (donnesVM.selectedImageposition != null) {
             buttonPlay.isEnabled = true
