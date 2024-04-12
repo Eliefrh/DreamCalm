@@ -190,11 +190,11 @@ class MainActivity : AppCompatActivity() {
             if (donnesVM.isGridViewClickable) {
                 buttonPlay.isEnabled = true
                 // Store the selected position in a variable
-            donnesVM.selectedImageposition = position
-            playingMusicImg.setImageResource(addedSoundItem[position].imageResId)
+                donnesVM.selectedImageposition = position
+                playingMusicImg.setImageResource(addedSoundItem[position].imageResId)
                 donnesVM.choosedGrid = 2
+            }
         }
-
         //Press and hold to delete the selected sound
         addedGridView.onItemLongClickListener =
             AdapterView.OnItemLongClickListener { parent, view, position, id ->
