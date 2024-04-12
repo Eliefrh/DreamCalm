@@ -10,7 +10,6 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.media.MediaPlayer
-import android.media.session.MediaSession
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -67,7 +66,6 @@ class MainActivity : AppCompatActivity() {
     lateinit var sleepTimeoutSpinner: Spinner
 
     private var mediaPlayer: MediaPlayer? = null
-    private var choosedGrid: Int = 0
 
 
     val sourcePath = "/baby-sleep-sounds-master/app/src/main/res/raw"
@@ -167,14 +165,13 @@ class MainActivity : AppCompatActivity() {
         initializeApp()
         scanSoundFolder()
 
-        gridviewSound= findViewById<GridView>(R.id.gridView)
+        gridviewSound= findViewById(R.id.gridView)
         soundItems = _soundMap?.keys?.map { SoundItem(it) } ?: emptyList()
         val adapter = SoundAdapter(this, soundItems)
         gridviewSound.adapter = adapter
 
 
         val addedGridView = findViewById<GridView>(R.id.gridView_ajoute)
-//        addedSoundItem = _addedSoundMap?.keys?.map { AddedSoundItem(it) } ?: emptyList()
         val addedAdapter = AddedSoundAdapter(this, addedSoundItem)
 
         var playingMusicImg = findViewById<ImageView>(R.id.playingSound)
@@ -185,24 +182,27 @@ class MainActivity : AppCompatActivity() {
                 // Store the selected position in a variable
                 donnesVM.selectedImageposition = position
                 playingMusicImg.setImageResource(soundItems[position].imageResId)
-            choosedGrid = 1
+            donnesVM.choosedGrid = 1
             }
         }
 
         addedGridView.setOnItemClickListener { parent, view, position, id ->
             if (donnesVM.isGridViewClickable) {
+                buttonPlay.isEnabled = true
                 // Store the selected position in a variable
             donnesVM.selectedImageposition = position
             playingMusicImg.setImageResource(addedSoundItem[position].imageResId)
-            choosedGrid = 2
+                donnesVM.choosedGrid = 2
         }
         }
 
         if (donnesVM.selectedImageposition != null) {
-            playingMusicImg.setImageResource(soundItems[donnesVM.selectedImageposition!!].imageResId)
-        }
-        if(donnesVM.selectedImageposition!=null){
             buttonPlay.isEnabled = true
+            if(donnesVM.choosedGrid == 1) {
+                playingMusicImg.setImageResource(soundItems[donnesVM.selectedImageposition!!].imageResId)
+            }else if(donnesVM.choosedGrid == 2){
+                playingMusicImg.setImageResource(addedSoundItem[donnesVM.selectedImageposition!!].imageResId)
+        }
         }
         val sleepTimeoutSpinner = findViewById<Spinner>(R.id.sleepTimerSpinner)
         val times: List<String> = _timeMap?.keys?.toList() ?: emptyList()
@@ -243,11 +243,11 @@ class MainActivity : AppCompatActivity() {
 //        if()
             if (donnesVM.selectedImageposition != null) {
                 if (!donnesVM.isPlaying) {
-                    if (choosedGrid == 1) {
+                    if (donnesVM.choosedGrid == 1) {
                         startPlayback()
 
                     }
-                    if (choosedGrid == 2) {
+                    if (donnesVM.choosedGrid == 2) {
                         startAddedPlayback(donnesVM.selectedImageposition as Int)
                     }
                 } else {
