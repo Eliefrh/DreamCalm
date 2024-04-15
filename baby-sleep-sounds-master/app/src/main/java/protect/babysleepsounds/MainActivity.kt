@@ -5,7 +5,6 @@ import android.app.ProgressDialog
 import android.bluetooth.BluetoothAdapter
 import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
@@ -175,7 +174,7 @@ class MainActivity : AppCompatActivity() {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         if (bluetoothAdapter == null) {
             // Device doesn't support Bluetooth
-            Toast.makeText(this, "Bluetooth is not supported on this device", Toast.LENGTH_SHORT)
+            Toast.makeText(this, R.string.bluetoothnot, Toast.LENGTH_SHORT)
                 .show()
         }
 

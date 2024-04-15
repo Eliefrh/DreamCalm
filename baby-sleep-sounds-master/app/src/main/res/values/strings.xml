@@ -33,6 +33,7 @@
     <string name="waves">Waves</string>
     <string name="whiteNoise">White Noise</string>
     <string name="saveRec">Save file</string>
+    <string name="bluetoothnot">Bluetooth is not supported on this device</string>
 
     <string name="preparing">Preparing</string>
     <string name="enableLowPassFilter">Low Pass Filter</string>

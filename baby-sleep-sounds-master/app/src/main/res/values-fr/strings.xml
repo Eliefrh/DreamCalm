@@ -38,6 +38,7 @@
     <string name="please">Veuillez entrer un nom</string>
     <string name="preparing">Préparation de</string>
     <string name="cancel">Annuler</string>
+    <string name="bluetoothnot">Bluetooth n\'est pas pris en charge sur cet appareil</string>
     <string name="saveRec">Sauvegarder fichier</string>
     <string name="enableLowPassFilter">filtre passe-bas</string>
     <string name="filterCutoff">Coupure du filtre</string>
