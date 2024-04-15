@@ -12,4 +12,5 @@
         android:layout_height="100dp"
         android:scaleType="centerCrop"
         android:src="@mipmap/campfire_foreground" />
+
 </LinearLayout>

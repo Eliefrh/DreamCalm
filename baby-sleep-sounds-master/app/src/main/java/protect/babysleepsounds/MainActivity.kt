@@ -5,6 +5,7 @@ import android.app.ProgressDialog
 import android.bluetooth.BluetoothAdapter
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
@@ -47,7 +48,7 @@ import java.util.LinkedList
 
 
 data class SoundItem(val imageResId: Int)
-data class AddedSoundItem(val imageResId: Int, val path: String)
+data class AddedSoundItem(val imageResId: Int, val path: String, val name: String)
 
 class MainActivity : AppCompatActivity() {
     val donnesVM: MainActivityViewModel by viewModels()
@@ -702,10 +703,12 @@ class MainActivity : AppCompatActivity() {
 
         if (soundFiles != null) {
             for (soundFile in soundFiles) {
+                // Extract the name of the sound from its path
+                val soundName = soundFile.nameWithoutExtension
                 // Use the actual path of the sound file for AddedSoundItem
-                val addedSound = AddedSoundItem(R.mipmap.ic_launcher, soundFile.absolutePath)
+                val addedSound = AddedSoundItem(R.mipmap.ic_launcher, soundFile.absolutePath, soundName)
                 addedSoundItem.add(addedSound)
-            }
+        }
         }
 
         val addedAdapter = AddedSoundAdapter(this, addedSoundItem)

@@ -31,8 +31,14 @@
     <string name="waterfall">Cascade</string>
     <string name="waves">Vagues</string>
     <string name="whiteNoise">Bruit blanc</string>
-
-    <string name="preparing">Préparation de&#8230;</string>
+    <string name="deleteDescription">"Êtes-vous sûr de vouloir supprimer ce son ?"</string>
+    <string name="confirm_deletion">Confirmer la suppression</string>
+    <string name="yes">Oui</string>
+    <string name="no">Non</string>
+    <string name="please">Veuillez entrer un nom</string>
+    <string name="preparing">Préparation de</string>
+    <string name="cancel">Annuler</string>
+    <string name="saveRec">Sauvegarder fichier</string>
     <string name="enableLowPassFilter">filtre passe-bas</string>
     <string name="filterCutoff">Coupure du filtre</string>
     <string name="filterCutoffValue"><xliff:g id="frequency">%d</xliff:g> Hz</string>

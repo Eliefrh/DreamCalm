@@ -9,18 +9,20 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.os.SystemClock
+import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.Chronometer
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
-import org.w3c.dom.Text
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -79,7 +81,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
         buttonPlaySound.isEnabled = false
         buttonSavingFile.isEnabled = false
         playText = findViewById(R.id.playSound)
-        playText.setText("Play")
+        playText.setText(R.string.playSound)
         // Check if a recording is in progress
         val recordingFilePath = donnesVM.recordingFilePath
         if (!recordingFilePath.isNullOrEmpty()) {
@@ -116,9 +118,9 @@ class RecordingUploadingActivity : AppCompatActivity() {
                 mediaPlayer!!.stop()
                 mediaPlayer!!.release()
                 mediaPlayer = null
-                playText.text = "Play"
+                playText.text = getString(R.string.playSound)
             } else {
-                playText.text = "Stop"
+                playText.text =  getString(R.string.stop)
                 selectedAudioUri?.let { uri ->
                     mediaPlayer = MediaPlayer().apply {
                         setDataSource(this@RecordingUploadingActivity, uri)
@@ -127,7 +129,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
                         setOnCompletionListener {
                             release()
                             mediaPlayer = null
-                            playText.text = "Play"
+                            playText.text = getString(R.string.playSound)
                         }
                     }
                 } ?: outputFile?.let { file ->
@@ -138,25 +140,43 @@ class RecordingUploadingActivity : AppCompatActivity() {
                         setOnCompletionListener {
                             release()
                             mediaPlayer = null
-                            playText.text = "Play"
+                            playText.text =  getString(R.string.playSound)
                         }
                     }
                 }
             }
         }
         buttonSavingFile.setOnClickListener {
-            saveRecording()
-            finish()
+            showSaveDialog()
+            //finish()
             if (mediaPlayer != null && mediaPlayer!!.isPlaying) {
                 mediaPlayer!!.stop()
                 mediaPlayer!!.release()
                 mediaPlayer = null
-                playText.text = "Play"
+                playText.text =  getString(R.string.playSound)
             }
         }
         buttonSelectFile.setOnClickListener {
             selectAudioFile()
         }
+    }
+    private fun showSaveDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_save_name, null)
+        val editTextName = dialogView.findViewById<EditText>(R.id.editTextName)
+
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.saveRec))
+            .setView(dialogView)
+            .setPositiveButton(getString(R.string.saveFile)) { dialog, which ->
+                val name = editTextName.text.toString().trim()
+                if (name.isNotEmpty()) {
+                    saveRecording(name)
+                } else {
+                    Toast.makeText(this, getString(R.string.please), Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton(getString(R.string.cancel), null)
+            .show()
     }
 
     private fun startRecording() {
@@ -209,26 +229,28 @@ class RecordingUploadingActivity : AppCompatActivity() {
         selectedAudioUri = outputFile?.toUri()
     }
 
-    private fun saveRecording() {
+    private fun saveRecording(name: String) {
+        // Your existing saveRecording logic
         val destinationDir =
             File(getExternalFilesDir(Environment.DIRECTORY_MUSIC), "SelectedSounds")
         if (!destinationDir.exists()) {
             destinationDir.mkdirs()
         }
         selectedAudioUri?.let { uri ->
-            val inputStream = contentResolver.openInputStream(uri)
             val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-            val destinationFile = File(destinationDir, "SEL_$timeStamp.3gp")
+            val fileName = "SEL_${name}_${timeStamp}.3gp"
+            val destinationFile = File(destinationDir, fileName)
 
+            val inputStream = contentResolver.openInputStream(uri)
             inputStream?.use { input ->
                 destinationFile.outputStream().use { output ->
                     input.copyTo(output)
                 }
             }
-            Toast.makeText(this, "Selected audio saved", Toast.LENGTH_SHORT).show()
-
+            Toast.makeText(this, "Recording saved as $fileName", Toast.LENGTH_SHORT).show()
         }
     }
+
 
 
     private fun getOutputMediaFile(): File {
@@ -269,7 +291,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
             mediaPlayer!!.stop()
             mediaPlayer!!.release()
             mediaPlayer = null
-            playText.text = "Play"
+            playText.text = getString(R.string.playSound)
         }
     }
 }

@@ -32,8 +32,9 @@
     <string name="waterfall">Waterfall</string>
     <string name="waves">Waves</string>
     <string name="whiteNoise">White Noise</string>
+    <string name="saveRec">Save file</string>
 
-    <string name="preparing">Preparing&#8230;</string>
+    <string name="preparing">Preparing</string>
     <string name="enableLowPassFilter">Low Pass Filter</string>
     <string name="filterCutoff">Filter cutoff</string>
     <string name="filterCutoffValue"><xliff:g id="frequency">%d</xliff:g> Hz</string>
@@ -41,11 +42,14 @@
     <string name="playbackFailure">Unable to play file, see logs for details</string>
     <string name="sleepTimerUpdated">Updated sleep timer</string>
     <string name="recorded">Recorded a sound</string>
-
+    <string name="deleteDescription">"Are you sure you want to delete this sound?"</string>
     <string name="theme">Theme</string>
-
-    <string name="notificationPlaying">Playing&#8230;</string>
-
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="confirm_deletion">Confirm Deletion</string>
+    <string name="notificationPlaying">Playing</string>
+    <string name="please">"Please enter a name"</string>
+    <string name="cancel">Cancel</string>
     <string name="notificationChannelName">Baby Sleep Sounds Audio Service</string>
 
     <string name="about">About</string>
