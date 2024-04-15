@@ -1,6 +1,7 @@
 package protect.babysleepsounds
 
 import android.Manifest
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaPlayer
@@ -164,19 +165,38 @@ class RecordingUploadingActivity : AppCompatActivity() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_save_name, null)
         val editTextName = dialogView.findViewById<EditText>(R.id.editTextName)
 
-        AlertDialog.Builder(this)
-            .setTitle(getString(R.string.saveRec))
-            .setView(dialogView)
-            .setPositiveButton(getString(R.string.saveFile)) { dialog, which ->
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setTitle(getString(R.string.saveRec))
+        alertDialogBuilder.setView(dialogView)
+        alertDialogBuilder.setPositiveButton(getString(R.string.saveFile), null)
+        alertDialogBuilder.setNegativeButton(getString(R.string.cancel), null)
+
+        val alertDialog = alertDialogBuilder.create()
+        alertDialog.setOnShowListener {
+            val saveButtonColor = if (Preferences[this]?.theme == Preferences.THEME_LIGHT) {
+                ContextCompat.getColor(this, R.color.menuItemTextColorLight) //  color for light theme
+            } else {
+                ContextCompat.getColor(this, R.color.menuItemTextColorDark)
+                // Blue color for dark theme
+            }
+            alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setTextColor(saveButtonColor)      // Similarly, set the text color for the negative button
+            val cancelButtonColor = if (Preferences[this]?.theme == Preferences.THEME_LIGHT) {
+                ContextCompat.getColor(this, R.color.menuItemTextColorLight)  //  color for light theme
+            } else {
+                ContextCompat.getColor(this, R.color.menuItemTextColorDark)
+            }
+            alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE)?.setTextColor(cancelButtonColor)
+            alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
                 val name = editTextName.text.toString().trim()
                 if (name.isNotEmpty()) {
                     saveRecording(name)
                 } else {
                     Toast.makeText(this, getString(R.string.please), Toast.LENGTH_SHORT).show()
                 }
+                alertDialog.dismiss()
             }
-            .setNegativeButton(getString(R.string.cancel), null)
-            .show()
+        }
+        alertDialog.show()
     }
 
     private fun startRecording() {

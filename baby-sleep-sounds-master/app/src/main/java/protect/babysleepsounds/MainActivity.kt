@@ -5,6 +5,7 @@ import android.app.ProgressDialog
 import android.bluetooth.BluetoothAdapter
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
@@ -217,26 +218,41 @@ class MainActivity : AppCompatActivity() {
                 val path: String = addedSoundItem[position].path
 
                 val alertDialogBuilder = AlertDialog.Builder(this@MainActivity)
-                alertDialogBuilder.setTitle("Confirm Deletion")
-                alertDialogBuilder.setMessage("Are you sure you want to delete this sound?")
-                alertDialogBuilder.setPositiveButton("Yes") { dialog, which ->
-                    // Effacer du path original
-                    val file = File(path)
-                    if (file.exists()) {
-                        file.delete()
+                alertDialogBuilder.setTitle(getString(R.string.confirm_deletion))
+                alertDialogBuilder.setMessage(getString(R.string.deleteDescription))
+                alertDialogBuilder.setPositiveButton(getString(R.string.yes), null)
+                alertDialogBuilder.setNegativeButton(getString(R.string.no), null)
+
+                val alertDialog = alertDialogBuilder.create()
+                alertDialog.setOnShowListener {
+                    val yesButtonColor = if (Preferences[this]?.theme == Preferences.THEME_LIGHT) {
+                        ContextCompat.getColor(this, R.color.menuItemTextColorLight) //  color for light theme
+                    } else {
+                        ContextCompat.getColor(this, R.color.menuItemTextColorDark)
+                        // Blue color for dark theme
                     }
+                    alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setTextColor(yesButtonColor)                    // Similarly, set the text color for the negative button
+                    val noButtonColor = if (Preferences[this]?.theme == Preferences.THEME_LIGHT) {
+                        ContextCompat.getColor(this, R.color.menuItemTextColorLight)  //  color for light theme
+                    } else {
+                        ContextCompat.getColor(this, R.color.menuItemTextColorDark)
+                    }
+                    alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE)?.setTextColor(noButtonColor)
+                    alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
+                        // Effacer du path original
+                        val file = File(path)
+                        if (file.exists()) {
+                            file.delete()
+                        }
 
-                    //effacer du gridView
-                    addedSoundItem.removeAt(position)
-                    scanSoundFolder()
+                        //effacer du gridView
+                        addedSoundItem.removeAt(position)
+                        scanSoundFolder()
+
+                        alertDialog.dismiss()
+                    }
                 }
-                alertDialogBuilder.setNegativeButton("No") { dialog, which ->
-                    //on ne fait rien
-                }
-
-                // affichage du dialog
-                alertDialogBuilder.create().show()
-
+                alertDialog.show()
                 true // Return true to consume the long click event
             }
 
