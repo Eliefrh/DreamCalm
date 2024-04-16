@@ -87,7 +87,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
             buttonPlaySound.isEnabled = false
             buttonSavingFile.isEnabled = false
         }
-        
+
         val recordingFilePath = donnesVM.recordingFilePath
         if (!recordingFilePath.isNullOrEmpty()) {
             // Restore the recording file path and update UI accordingly
@@ -297,6 +297,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 123 && resultCode == RESULT_OK) {
             selectedAudioUri = data?.data
+            donnesVM.recordingFilePath = selectedAudioUri.toString()
             buttonPlaySound.isEnabled = true
             buttonSavingFile.isEnabled = true
         }
