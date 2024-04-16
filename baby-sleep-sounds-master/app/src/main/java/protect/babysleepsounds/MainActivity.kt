@@ -255,6 +255,7 @@ class MainActivity : AppCompatActivity() {
                         playingMusicImg?.setImageResource(0)
 //                        playingMusicImg = null
                         buttonPlay.isEnabled = false
+                        stopPlayback()
 
                     }
                 }
