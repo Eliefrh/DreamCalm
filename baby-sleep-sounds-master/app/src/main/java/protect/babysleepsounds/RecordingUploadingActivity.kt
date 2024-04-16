@@ -79,8 +79,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
         buttonPlaySound = findViewById(R.id.playSound)
         buttonSavingFile = findViewById(R.id.saveFile)
         buttonSelectFile = findViewById(R.id.uploadingButton)
-        buttonPlaySound.isEnabled = false
-        buttonSavingFile.isEnabled = false
+
         playText = findViewById(R.id.playSound)
         playText.setText(R.string.playSound)
         // Check if a recording is in progress
@@ -94,6 +93,9 @@ class RecordingUploadingActivity : AppCompatActivity() {
             chronometer.base = SystemClock.elapsedRealtime() + donnesVM.recordingElapsedTime
             buttonPlaySound.isEnabled = true
             buttonSavingFile.isEnabled = true
+        }else{
+            buttonPlaySound.isEnabled = false
+            buttonSavingFile.isEnabled = false
         }
         buttonRecording.setOnClickListener {
             if (!isRecording) {
