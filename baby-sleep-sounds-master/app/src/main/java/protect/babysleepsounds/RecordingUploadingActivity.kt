@@ -85,6 +85,8 @@ class RecordingUploadingActivity : AppCompatActivity() {
         // Check if a recording is in progress
         if (donnesVM.selectedAudioUri != null) {
             selectedAudioUri = donnesVM.selectedAudioUri
+
+        }else{
             buttonPlaySound.isEnabled = false
             buttonSavingFile.isEnabled = false
         }
