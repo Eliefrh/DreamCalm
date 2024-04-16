@@ -83,6 +83,11 @@ class RecordingUploadingActivity : AppCompatActivity() {
         playText = findViewById(R.id.playSound)
         playText.setText(R.string.playSound)
         // Check if a recording is in progress
+        if (donnesVM.uploadFile ==false) {
+            buttonPlaySound.isEnabled = false
+            buttonSavingFile.isEnabled = false
+        }
+        
         val recordingFilePath = donnesVM.recordingFilePath
         if (!recordingFilePath.isNullOrEmpty()) {
             // Restore the recording file path and update UI accordingly
@@ -93,9 +98,6 @@ class RecordingUploadingActivity : AppCompatActivity() {
             chronometer.base = SystemClock.elapsedRealtime() + donnesVM.recordingElapsedTime
             buttonPlaySound.isEnabled = true
             buttonSavingFile.isEnabled = true
-        }else{
-            buttonPlaySound.isEnabled = false
-            buttonSavingFile.isEnabled = false
         }
         buttonRecording.setOnClickListener {
             if (!isRecording) {
@@ -298,6 +300,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
             buttonPlaySound.isEnabled = true
             buttonSavingFile.isEnabled = true
         }
+        donnesVM.uploadFile = true
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

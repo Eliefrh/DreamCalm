@@ -8,6 +8,7 @@ class MainActivityViewModel : ViewModel() {
     var itemSelected: Boolean = true
     var frequenceChanged = false
     var recordingFilePath : String?= null
+    var uploadFile : Boolean?= null
     var recordingElapsedTime : Long = 0
     var isGridViewClickable: Boolean = true
     var choosedGrid: Int = 0
