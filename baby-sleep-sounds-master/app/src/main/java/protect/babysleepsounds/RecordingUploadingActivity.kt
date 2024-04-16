@@ -103,15 +103,18 @@ class RecordingUploadingActivity : AppCompatActivity() {
             buttonSavingFile.isEnabled = true
         }
         buttonRecording.setOnClickListener {
+
             if (!isRecording) {
+                if(!donnesVM.isplayingRecording){
+
                 buttonRecording.setBackgroundColor(
                     ContextCompat.getColor(
                         this,
                         R.color.colorPrimary
                     )
                 )
-                startRecording()
-            } else {
+                startRecording()}
+            }else {
                 buttonRecording.setBackgroundColor(
                     ContextCompat.getColor(
                         this,
@@ -130,7 +133,9 @@ class RecordingUploadingActivity : AppCompatActivity() {
                 mediaPlayer!!.release()
                 mediaPlayer = null
                 playText.text = getString(R.string.playSound)
+                donnesVM.isplayingRecording = false
             } else {
+                donnesVM.isplayingRecording = true
                 playText.text =  getString(R.string.stop)
                 selectedAudioUri?.let { uri ->
                     mediaPlayer = MediaPlayer().apply {

@@ -10,6 +10,7 @@ class MainActivityViewModel : ViewModel() {
     var frequenceChanged = false
     var recordingFilePath : String?= null
     var selectedAudioUri : Uri? = null
+    var isplayingRecording : Boolean = false
     var recordingElapsedTime : Long = 0
     var isGridViewClickable: Boolean = true
     var choosedGrid: Int = 0
