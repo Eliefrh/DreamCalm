@@ -122,6 +122,9 @@ class RecordingUploadingActivity : AppCompatActivity() {
             }
         }
         buttonPlaySound.setOnClickListener {
+            if(isRecording){
+                stopRecording()
+            }
             if (mediaPlayer != null && mediaPlayer!!.isPlaying) {
                 mediaPlayer!!.stop()
                 mediaPlayer!!.release()
