@@ -85,7 +85,6 @@ class RecordingUploadingActivity : AppCompatActivity() {
         // Check if a recording is in progress
         if (donnesVM.selectedAudioUri != null) {
             selectedAudioUri = donnesVM.selectedAudioUri
-            donnesVM.recordingFilePath = null
 
         }else{
             buttonPlaySound.isEnabled = false
@@ -94,7 +93,6 @@ class RecordingUploadingActivity : AppCompatActivity() {
 
         val recordingFilePath = donnesVM.recordingFilePath
         if (!recordingFilePath.isNullOrEmpty()) {
-            donnesVM.selectedAudioUri = null
             // Restore the recording file path and update UI accordingly
             outputFile = File(recordingFilePath)
             isRecordingText.visibility = TextView.VISIBLE
@@ -254,6 +252,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
         buttonPlaySound.isEnabled = true
         buttonSavingFile.isEnabled = true
         donnesVM.recordingFilePath = outputFile?.absolutePath
+        donnesVM.selectedAudioUri = null
         donnesVM.recordingElapsedTime = chronometer.base - SystemClock.elapsedRealtime()
         selectedAudioUri = outputFile?.toUri()
     }
@@ -303,6 +302,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
         if (requestCode == 123 && resultCode == RESULT_OK) {
             selectedAudioUri = data?.data
             donnesVM.selectedAudioUri = selectedAudioUri
+            donnesVM.recordingFilePath = null
             buttonPlaySound.isEnabled = true
             buttonSavingFile.isEnabled = true
         }
