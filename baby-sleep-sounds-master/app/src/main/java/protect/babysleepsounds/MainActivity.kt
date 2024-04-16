@@ -250,6 +250,12 @@ class MainActivity : AppCompatActivity() {
                         scanSoundFolder()
 
                         alertDialog.dismiss()
+                        donnesVM.selectedImageposition = null
+                        donnesVM.itemSelected = false
+                        playingMusicImg?.setImageResource(0)
+//                        playingMusicImg = null
+                        buttonPlay.isEnabled = false
+
                     }
                 }
                 alertDialog.show()
