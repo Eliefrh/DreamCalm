@@ -163,7 +163,6 @@ class RecordingUploadingActivity : AppCompatActivity() {
                 mediaPlayer = null
                 playText.text =  getString(R.string.playSound)
             }
-            buttonSavingFile.isEnabled = false
         }
         buttonSelectFile.setOnClickListener {
             selectAudioFile()
@@ -198,6 +197,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
                 val name = editTextName.text.toString().trim()
                 if (name.isNotEmpty()) {
                     saveRecording(name)
+                    buttonSavingFile.isEnabled = false
                 } else {
                     Toast.makeText(this, getString(R.string.please), Toast.LENGTH_SHORT).show()
                 }
