@@ -83,7 +83,8 @@ class RecordingUploadingActivity : AppCompatActivity() {
         playText = findViewById(R.id.playSound)
         playText.setText(R.string.playSound)
         // Check if a recording is in progress
-        if (donnesVM.uploadFile ==false) {
+        if (donnesVM.selectedAudioUri != null) {
+            selectedAudioUri = donnesVM.selectedAudioUri
             buttonPlaySound.isEnabled = false
             buttonSavingFile.isEnabled = false
         }
@@ -297,11 +298,10 @@ class RecordingUploadingActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 123 && resultCode == RESULT_OK) {
             selectedAudioUri = data?.data
-            donnesVM.recordingFilePath = selectedAudioUri.toString()
+            donnesVM.selectedAudioUri = selectedAudioUri
             buttonPlaySound.isEnabled = true
             buttonSavingFile.isEnabled = true
         }
-        donnesVM.uploadFile = true
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

@@ -1,5 +1,6 @@
 package protect.babysleepsounds
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 
 class MainActivityViewModel : ViewModel() {
@@ -8,7 +9,7 @@ class MainActivityViewModel : ViewModel() {
     var itemSelected: Boolean = true
     var frequenceChanged = false
     var recordingFilePath : String?= null
-    var uploadFile : Boolean?= null
+    var selectedAudioUri : Uri? = null
     var recordingElapsedTime : Long = 0
     var isGridViewClickable: Boolean = true
     var choosedGrid: Int = 0
