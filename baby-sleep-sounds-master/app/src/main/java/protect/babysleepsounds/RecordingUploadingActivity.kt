@@ -163,6 +163,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
                 mediaPlayer = null
                 playText.text =  getString(R.string.playSound)
             }
+            buttonSavingFile.isEnabled = false
         }
         buttonSelectFile.setOnClickListener {
             selectAudioFile()
@@ -240,7 +241,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
 
     private fun stopRecording() {
         isRecordingText.text = getString(R.string.recorded)
-
+        buttonSavingFile.isEnabled =  true
         // Stop the chronometer
         chronometer.stop()
         mediaRecorder?.apply {
@@ -305,6 +306,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
             donnesVM.recordingFilePath = null
             buttonPlaySound.isEnabled = true
             buttonSavingFile.isEnabled = true
+
         }
     }
 
