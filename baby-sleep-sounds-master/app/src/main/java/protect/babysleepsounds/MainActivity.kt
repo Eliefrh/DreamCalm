@@ -182,7 +182,7 @@ class MainActivity : AppCompatActivity() {
         initializeApp()
         scanSoundFolder()
 
-        gridviewSound= findViewById(R.id.gridView)
+        gridviewSound = findViewById(R.id.gridView)
         soundItems = _soundMap?.keys?.map { SoundItem(it) } ?: emptyList()
         val adapter = SoundAdapter(this, soundItems)
         gridviewSound.adapter = adapter
@@ -193,23 +193,39 @@ class MainActivity : AppCompatActivity() {
 
         var playingMusicImg = findViewById<ImageView>(R.id.playingSound)
 
+
         gridviewSound.setOnItemClickListener { parent, view, position, id ->
             if (donnesVM.isGridViewClickable) {
+
+                //Remove the highlight from the other item
+                (addedGridView.adapter as AddedSoundAdapter).setSelectedItem(-1)
+
+
                 buttonPlay.isEnabled = true
                 // Store the selected position in a variable
                 donnesVM.selectedImageposition = position
                 playingMusicImg.setImageResource(soundItems[position].imageResId)
-            donnesVM.choosedGrid = 1
+                donnesVM.choosedGrid = 1
+
+                //highlight the selected item
+                (gridviewSound.adapter as SoundAdapter).setSelectedItem(donnesVM.selectedImageposition!!)
+
             }
         }
 
         addedGridView.setOnItemClickListener { parent, view, position, id ->
             if (donnesVM.isGridViewClickable) {
+
+                //Remove the highlight from the other item
+                (gridviewSound.adapter as SoundAdapter).setSelectedItem(-1)
+
                 buttonPlay.isEnabled = true
                 // Store the selected position in a variable
                 donnesVM.selectedImageposition = position
                 playingMusicImg.setImageResource(addedSoundItem[position].imageResId)
                 donnesVM.choosedGrid = 2
+                (addedGridView.adapter as AddedSoundAdapter).setSelectedItem(donnesVM.selectedImageposition!!)
+
             }
         }
         //Press and hold to delete the selected sound
@@ -226,18 +242,26 @@ class MainActivity : AppCompatActivity() {
                 val alertDialog = alertDialogBuilder.create()
                 alertDialog.setOnShowListener {
                     val yesButtonColor = if (Preferences[this]?.theme == Preferences.THEME_LIGHT) {
-                        ContextCompat.getColor(this, R.color.menuItemTextColorLight) //  color for light theme
+                        ContextCompat.getColor(
+                            this,
+                            R.color.menuItemTextColorLight
+                        ) //  color for light theme
                     } else {
                         ContextCompat.getColor(this, R.color.menuItemTextColorDark)
                         // Blue color for dark theme
                     }
-                    alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setTextColor(yesButtonColor)                    // Similarly, set the text color for the negative button
+                    alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)
+                        ?.setTextColor(yesButtonColor)                    // Similarly, set the text color for the negative button
                     val noButtonColor = if (Preferences[this]?.theme == Preferences.THEME_LIGHT) {
-                        ContextCompat.getColor(this, R.color.menuItemTextColorLight)  //  color for light theme
+                        ContextCompat.getColor(
+                            this,
+                            R.color.menuItemTextColorLight
+                        )  //  color for light theme
                     } else {
                         ContextCompat.getColor(this, R.color.menuItemTextColorDark)
                     }
-                    alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE)?.setTextColor(noButtonColor)
+                    alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE)
+                        ?.setTextColor(noButtonColor)
                     alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
                         // Effacer du path original
                         val file = File(path)
@@ -267,11 +291,15 @@ class MainActivity : AppCompatActivity() {
 
         if (donnesVM.selectedImageposition != null) {
             buttonPlay.isEnabled = true
-            if(donnesVM.choosedGrid == 1) {
+            if (donnesVM.choosedGrid == 1) {
                 playingMusicImg.setImageResource(soundItems[donnesVM.selectedImageposition!!].imageResId)
-            }else if(donnesVM.choosedGrid == 2){
+                (gridviewSound.adapter as SoundAdapter).setSelectedItem(donnesVM.selectedImageposition!!)
+
+            } else if (donnesVM.choosedGrid == 2) {
                 playingMusicImg.setImageResource(addedSoundItem[donnesVM.selectedImageposition!!].imageResId)
-        }
+                (addedGridView.adapter as AddedSoundAdapter).setSelectedItem(donnesVM.selectedImageposition!!)
+
+            }
         }
         val sleepTimeoutSpinner = findViewById<Spinner>(R.id.sleepTimerSpinner)
         val times: List<String> = _timeMap?.keys?.toList() ?: emptyList()
@@ -689,7 +717,12 @@ class MainActivity : AppCompatActivity() {
                 R.color.menuItemTextColorDark // Define your dark theme text color here
             }
             menuItem.title = SpannableString(itemTitle).apply {
-                setSpan(ForegroundColorSpan(ContextCompat.getColor(this@MainActivity, textColor)), 0, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                setSpan(
+                    ForegroundColorSpan(ContextCompat.getColor(this@MainActivity, textColor)),
+                    0,
+                    length,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
             }
         }
         return super.onCreateOptionsMenu(menu)
@@ -704,7 +737,7 @@ class MainActivity : AppCompatActivity() {
             displayAboutDialog()
             return true
         } else if (id == R.id.action_add_own) {
-            if(donnesVM.isPlaying){
+            if (donnesVM.isPlaying) {
                 stopPlayback()
             }
             startActivity(Intent(this, RecordingUploadingActivity::class.java))
@@ -728,9 +761,10 @@ class MainActivity : AppCompatActivity() {
                 // Extract the name of the sound from its path
                 val soundName = soundFile.nameWithoutExtension
                 // Use the actual path of the sound file for AddedSoundItem
-                val addedSound = AddedSoundItem(R.mipmap.ic_launcher, soundFile.absolutePath, soundName)
+                val addedSound =
+                    AddedSoundItem(R.mipmap.ic_launcher, soundFile.absolutePath, soundName)
                 addedSoundItem.add(addedSound)
-        }
+            }
         }
 
         val addedAdapter = AddedSoundAdapter(this, addedSoundItem)
