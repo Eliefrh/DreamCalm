@@ -69,4 +69,12 @@
     <string name="recorded">Son enregistré</string>
     <string name="boutonAppuyer">Appliquer</string>
     <string name="action_add_own">Ajout de son</string>
+
+    <string name="confirm_action">Confirmer l\'action</string>
+    <string name="choose_action">Choisir une action</string>
+    <string name="delete">Supprimer</string>
+    <string name="sound_deleted">Son supprimé</string>
+    <string name="rename">Renommer</string>
+    <string name="enter_new_name">Entrer un nouveau nom</string>
+    <string name="sound_renamed">Son renommé</string>
 </resources>

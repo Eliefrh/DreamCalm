@@ -25,6 +25,7 @@ import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.EditText
 import android.widget.GridView
 import android.widget.ImageView
 import android.widget.Spinner
@@ -43,8 +44,11 @@ import nl.bravobit.ffmpeg.FFmpeg
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.LinkedList
+import java.util.Locale
 
 
 data class SoundItem(val imageResId: Int)
@@ -218,48 +222,80 @@ class MainActivity : AppCompatActivity() {
                 val path: String = addedSoundItem[position].path
 
                 val alertDialogBuilder = AlertDialog.Builder(this@MainActivity)
-                alertDialogBuilder.setTitle(getString(R.string.confirm_deletion))
-                alertDialogBuilder.setMessage(getString(R.string.deleteDescription))
-                alertDialogBuilder.setPositiveButton(getString(R.string.yes), null)
-                alertDialogBuilder.setNegativeButton(getString(R.string.no), null)
+                alertDialogBuilder.setTitle(getString(R.string.confirm_action))
+                alertDialogBuilder.setMessage(getString(R.string.choose_action))
 
-                val alertDialog = alertDialogBuilder.create()
-                alertDialog.setOnShowListener {
-                    val yesButtonColor = if (Preferences[this]?.theme == Preferences.THEME_LIGHT) {
-                        ContextCompat.getColor(this, R.color.menuItemTextColorLight) //  color for light theme
-                    } else {
-                        ContextCompat.getColor(this, R.color.menuItemTextColorDark)
-                        // Blue color for dark theme
-                    }
-                    alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setTextColor(yesButtonColor)                    // Similarly, set the text color for the negative button
-                    val noButtonColor = if (Preferences[this]?.theme == Preferences.THEME_LIGHT) {
-                        ContextCompat.getColor(this, R.color.menuItemTextColorLight)  //  color for light theme
-                    } else {
-                        ContextCompat.getColor(this, R.color.menuItemTextColorDark)
-                    }
-                    alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE)?.setTextColor(noButtonColor)
-                    alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
-                        // Effacer du path original
-                        val file = File(path)
-                        if (file.exists()) {
-                            file.delete()
+                alertDialogBuilder.setPositiveButton(getString(R.string.delete), DialogInterface.OnClickListener { dialog, which ->
+                    // Delete the sound
+                    val deleteDialog = AlertDialog.Builder(this@MainActivity)
+                    deleteDialog.setTitle(getString(R.string.confirm_deletion))
+                    deleteDialog.setMessage(getString(R.string.deleteDescription))
+                    deleteDialog.setPositiveButton(getString(R.string.yes), null)
+                    deleteDialog.setNegativeButton(getString(R.string.no), null)
+
+                    val alertDialog = deleteDialog.create()
+                    alertDialog.setOnShowListener {
+                        val yesButtonColor = if (Preferences[this]?.theme == Preferences.THEME_LIGHT) {
+                            ContextCompat.getColor(this, R.color.menuItemTextColorLight) //  color for light theme
+                        } else {
+                            ContextCompat.getColor(this, R.color.menuItemTextColorDark)
+                            // Blue color for dark theme
                         }
+                        alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setTextColor(yesButtonColor)                    // Similarly, set the text color for the negative button
+                        val noButtonColor = if (Preferences[this]?.theme == Preferences.THEME_LIGHT) {
+                            ContextCompat.getColor(this, R.color.menuItemTextColorLight)  //  color for light theme
+                        } else {
+                            ContextCompat.getColor(this, R.color.menuItemTextColorDark)
+                        }
+                        alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE)?.setTextColor(noButtonColor)
+                        alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
+                            // Effacer du path original
+                            val file = File(path)
+                            if (file.exists()) {
+                                file.delete()
+                            }
 
-                        //effacer du gridView
-                        addedSoundItem.removeAt(position)
-                        scanSoundFolder()
+                            //effacer du gridView
+                            addedSoundItem.removeAt(position)
+                            scanSoundFolder()
 
-                        alertDialog.dismiss()
-                        donnesVM.selectedImageposition = null
-                        donnesVM.itemSelected = false
-                        playingMusicImg?.setImageResource(0)
+                            alertDialog.dismiss()
+                            donnesVM.selectedImageposition = null
+                            donnesVM.itemSelected = false
+                            playingMusicImg?.setImageResource(0)
 //                        playingMusicImg = null
-                        buttonPlay.isEnabled = false
-                        stopPlayback()
+                            buttonPlay.isEnabled = false
+                            stopPlayback()
 
+                        }
                     }
-                }
-                alertDialog.show()
+                    alertDialog.show()
+                })
+                alertDialogBuilder.setNegativeButton(getString(R.string.rename), DialogInterface.OnClickListener { dialog, which ->
+                    // Rename the sound
+                    val renameDialog = AlertDialog.Builder(this@MainActivity)
+                    renameDialog.setTitle(getString(R.string.enter_new_name))
+                    val input = EditText(this@MainActivity)
+                    renameDialog.setView(input)
+                    renameDialog.setPositiveButton(getString(R.string.ok), DialogInterface.OnClickListener { dialog, which ->
+                        val newName = input.text.toString()
+                        val file = File(path)
+                        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(
+                            Date()
+                        )
+                        val newFile = File(file.parentFile, "SEL_${newName}_${timeStamp}.3gp")
+                        file.renameTo(newFile)
+                        addedSoundItem[position] = AddedSoundItem(addedSoundItem[position].imageResId, newFile.absolutePath, newName)
+                        addedAdapter.notifyDataSetChanged()
+                        Toast.makeText(this, getString(R.string.sound_renamed), Toast.LENGTH_SHORT).show()
+                    })
+                    renameDialog.setNegativeButton(getString(R.string.cancel), null)
+                    renameDialog.show()
+                })
+                alertDialogBuilder.setNeutralButton(getString(R.string.cancel), null)
+
+                val alertDialogg = alertDialogBuilder.create()
+                alertDialogg.show()
                 true // Return true to consume the long click event
             }
 
