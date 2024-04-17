@@ -3,6 +3,8 @@ package protect.babysleepsounds
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
 import android.os.IBinder
@@ -19,6 +21,8 @@ class AudioService : Service() {
     private var _mediaPlayer: LoopingAudioPlayer? = null
     public lateinit var exoPlayer: SimpleExoPlayer
     var audioFilename :String? = null
+    private var focusRequest: AudioFocusRequest? = null
+
     override fun onBind(intent: Intent): IBinder? {
         // Used only in case of bound services.
         return null
@@ -64,56 +68,75 @@ class AudioService : Service() {
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        val audioFilename = intent.getStringExtra(AUDIO_FILENAME_ARG)
+        audioFilename = intent.getStringExtra(AUDIO_FILENAME_ARG)
+        var res =  0
+        // Request audio focus
+        if(audioFilename != null){
+            // Request audio focus for playback
+            val playbackAttributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build()
+            focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                .setAudioAttributes(playbackAttributes)
+                .setAcceptsDelayedFocusGain(true)
+                .setOnAudioFocusChangeListener(audioFocusChangeListener)
+                .build()
 
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q &&
-            !(audioFilename?.startsWith("/storage/emulated/0/Android/data/protect.babysleepsounds/files/Music/SelectedSounds") == true)
-        ) {
-
-            if (audioFilename != null) {
-                Log.i(TAG, "Received intent to start playback")
-                if (_mediaPlayer != null) {
-                    _mediaPlayer!!.stop()
-                }
-                _mediaPlayer = LoopingAudioPlayer(this, File(audioFilename))
-                _mediaPlayer!!.start()
-            } else {
-                Log.i(TAG, "Received intent to stop playback")
-                if (_mediaPlayer != null ) {
-                    _mediaPlayer!!.stop()
-                    _mediaPlayer = null
-                }
-                if (exoPlayer != null){
-                    exoPlayer!!.stop()
-                }
-                stopForeground(true)
-                stopSelf()
+            res = audioManager.requestAudioFocus(focusRequest!!)
             }
-        } else {
 
-            val dataSourceFactory = DefaultDataSourceFactory(this, "exoplayer-sample")
-            val audioSource = audioFilename?.toUri()?.let { MediaItem.fromUri(it) }?.let {
-                ProgressiveMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(it)
-            }
-            if (audioSource != null) {
-                exoPlayer.prepare(audioSource)
+
+            // Your app has been granted audio focus
+            // Start your media playback here
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q &&
+                !(audioFilename?.startsWith("/storage/emulated/0/Android/data/protect.babysleepsounds/files/Music/SelectedSounds") == true)
+            ) {
+
+                if (audioFilename != null && res == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                    Log.i(TAG, "Received intent to start playback")
+                    if (_mediaPlayer != null) {
+                        _mediaPlayer!!.stop()
+                    }
+                    _mediaPlayer = LoopingAudioPlayer(this, File(audioFilename))
+                    _mediaPlayer!!.start()
+                } else {
+                    Log.i(TAG, "Received intent to stop playback")
+                    if (_mediaPlayer != null ) {
+                        _mediaPlayer!!.stop()
+                        _mediaPlayer = null
+                    }
+                    exoPlayer.stop()
+                    stopForeground(true)
+                    stopSelf()
+                }
             } else {
-                exoPlayer!!.stop()
+
+                val dataSourceFactory = DefaultDataSourceFactory(this, "exoplayer-sample")
+                val audioSource = audioFilename?.toUri()?.let { MediaItem.fromUri(it) }?.let {
+                    ProgressiveMediaSource.Factory(dataSourceFactory)
+                        .createMediaSource(it)
+                }
+                if (audioSource != null && res == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                    exoPlayer.prepare(audioSource)
+                } else {
+                    exoPlayer.stop()
 //                _mediaPlayer = null
 
-                stopForeground(true)
-                stopSelf()
-            }
-            exoPlayer.playWhenReady = true
+                    stopForeground(true)
+                    stopSelf()
+                }
+                exoPlayer.playWhenReady = true
 
-        }
+            }
+
 
         // If this service is killed, let is remain dead until explicitly started again.
         return START_NOT_STICKY
     }
 
     override fun onDestroy() {
+
         if (_mediaPlayer != null) {
             _mediaPlayer!!.stop()
         }
@@ -122,13 +145,14 @@ class AudioService : Service() {
             exoPlayer.release()
         }
         // Abandon audio focus when playback stops
-        audioManager.abandonAudioFocus(audioFocusChangeListener)
+        // Abandon audio focus when playback stops
+        focusRequest?.let {
+            audioManager.abandonAudioFocusRequest(it)
+        }
         super.onDestroy()
     }
 
-
     companion object {
-
         private const val TAG = "BabySleepSounds"
         const val AUDIO_FILENAME_ARG = "AUDIO_FILENAME_ARG"
         const val ACTION_PLAY = "protect.babysleepsounds.action.PLAY"
