@@ -146,6 +146,13 @@ class MainActivity : AppCompatActivity() {
         startService(startIntentMedia)
         scanSoundFolder()
 
+//        donnesVM.choosedGrid = 1
+        if (donnesVM.selectedImageposition == null) {
+            (gridviewSound.adapter as SoundAdapter).setSelectedItem(0)
+        }
+        donnesVM.selectedImageposition = 0
+        donnesVM.itemSelected = true
+
 
         if (donnesVM.isPlaying) {
             val button = findViewById<Button>(R.id.button)
@@ -167,7 +174,12 @@ class MainActivity : AppCompatActivity() {
         checkPermissions()
         sleepTimeoutSpinner = findViewById(R.id.sleepTimerSpinner)
         buttonPlay = findViewById(R.id.button)
-
+        buttonPlay.isEnabled = true
+        if (donnesVM.selectedImageposition == null){
+            donnesVM.selectedImageposition = 0
+            donnesVM.choosedGrid= 1
+            donnesVM.isPlaying = false
+        }
         val filesDir = filesDir
 
 
@@ -192,7 +204,7 @@ class MainActivity : AppCompatActivity() {
         val addedAdapter = AddedSoundAdapter(this, addedSoundItem)
         addedGridView.adapter = addedAdapter
         var playingMusicImg = findViewById<ImageView>(R.id.playingSound)
-
+        playingMusicImg.setImageResource(R.mipmap.campfire_foreground)
 
         gridviewSound.setOnItemClickListener { parent, view, position, id ->
             if (donnesVM.isGridViewClickable) {
@@ -763,7 +775,11 @@ class MainActivity : AppCompatActivity() {
                 val soundName = soundFile.nameWithoutExtension
                 // Use the actual path of the sound file for AddedSoundItem
                 val addedSound =
-                    AddedSoundItem(R.mipmap.music_notes_foreground, soundFile.absolutePath, soundName)
+                    AddedSoundItem(
+                        R.mipmap.music_notes_foreground,
+                        soundFile.absolutePath,
+                        soundName
+                    )
                 addedSoundItem.add(addedSound)
             }
         }
