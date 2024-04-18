@@ -190,7 +190,7 @@ class MainActivity : AppCompatActivity() {
 
         val addedGridView = findViewById<GridView>(R.id.gridView_ajoute)
         val addedAdapter = AddedSoundAdapter(this, addedSoundItem)
-
+        addedGridView.adapter = addedAdapter
         var playingMusicImg = findViewById<ImageView>(R.id.playingSound)
 
 
@@ -431,7 +431,8 @@ class MainActivity : AppCompatActivity() {
         // - Save as a mp3 file, 128kbps, stereo
         _soundMap =
             ImmutableMap.builder<Int, Int>().put(R.mipmap.campfire_foreground, R.raw.campfire)
-                .put(R.mipmap.dryer_foreground, R.raw.dryer).put(R.mipmap.fan_foreground, R.raw.fan)
+                .put(R.mipmap.dryer_foreground, R.raw.dryer)
+                .put(R.mipmap.fan_foreground, R.raw.fan)
                 .put(R.mipmap.ocean_foreground, R.raw.ocean)
                 .put(R.mipmap.rain_foreground, R.raw.rain)
                 .put(R.mipmap.refrigerator_foreground, R.raw.refrigerator)
@@ -762,7 +763,7 @@ class MainActivity : AppCompatActivity() {
                 val soundName = soundFile.nameWithoutExtension
                 // Use the actual path of the sound file for AddedSoundItem
                 val addedSound =
-                    AddedSoundItem(R.mipmap.ic_launcher, soundFile.absolutePath, soundName)
+                    AddedSoundItem(R.mipmap.music_notes_foreground, soundFile.absolutePath, soundName)
                 addedSoundItem.add(addedSound)
             }
         }
