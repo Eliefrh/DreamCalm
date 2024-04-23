@@ -11,7 +11,7 @@ import android.widget.ImageView
 
 class SoundAdapter(private val context: Context, private val soundItems: List<SoundItem>) :
     BaseAdapter() {
-
+    private var selectedItemPosition = -1
     override fun getCount(): Int {
         return soundItems.size
     }
@@ -30,6 +30,17 @@ class SoundAdapter(private val context: Context, private val soundItems: List<So
             .inflate(R.layout.custom_grid_item, parent, false)
         val iconImageView = itemView.findViewById<ImageView>(R.id.icon)
         iconImageView.setImageResource(soundItems[position].imageResId)
+
+        if (position == selectedItemPosition) {
+            itemView.setBackgroundResource(R.color.colorPrimary)
+        } else {
+            itemView.setBackgroundResource(android.R.color.transparent)
+        }
         return itemView
+    }
+
+    fun setSelectedItem(position: Int) {
+        selectedItemPosition = position
+        notifyDataSetChanged()
     }
 }

@@ -9,8 +9,12 @@ import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
 
-class AddedSoundAdapter(private val context: Context, private val soundItems: List<AddedSoundItem>) :
+class AddedSoundAdapter(
+    private val context: Context,
+    private val soundItems: List<AddedSoundItem>
+) :
     BaseAdapter() {
+    private var selectedItemPosition = -1
 
     override fun getCount(): Int {
         return soundItems.size
@@ -24,6 +28,7 @@ class AddedSoundAdapter(private val context: Context, private val soundItems: Li
     override fun getItemId(position: Int): Long {
         return position.toLong()
     }
+
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val itemView = convertView ?: LayoutInflater.from(context)
             .inflate(R.layout.custom_grid_item2, parent, false)
@@ -41,6 +46,12 @@ class AddedSoundAdapter(private val context: Context, private val soundItems: Li
         // Set the extracted name in the TextView
         nameTextView.text = name
 
+        if (position == selectedItemPosition) {
+            itemView.setBackgroundResource(R.color.colorPrimary)
+        } else {
+            itemView.setBackgroundResource(android.R.color.transparent)
+        }
+
         return itemView
     }
 
@@ -52,5 +63,10 @@ class AddedSoundAdapter(private val context: Context, private val soundItems: Li
         } else {
             "Unknown"  // Return a default value if name extraction fails
         }
+    }
+
+    fun setSelectedItem(position: Int) {
+        selectedItemPosition = position
+        notifyDataSetChanged()
     }
 }
