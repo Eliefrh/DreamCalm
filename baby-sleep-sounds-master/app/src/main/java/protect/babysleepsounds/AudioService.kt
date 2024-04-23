@@ -9,6 +9,7 @@ import android.media.AudioManager
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.net.toUri
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
@@ -67,6 +68,7 @@ class AudioService : Service() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         audioFilename = intent.getStringExtra(AUDIO_FILENAME_ARG)
         var res =  0
@@ -77,14 +79,18 @@ class AudioService : Service() {
                 .setUsage(AudioAttributes.USAGE_MEDIA)
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                 .build()
-            focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-                .setAudioAttributes(playbackAttributes)
-                .setAcceptsDelayedFocusGain(true)
-                .setOnAudioFocusChangeListener(audioFocusChangeListener)
-                .build()
-
-            res = audioManager.requestAudioFocus(focusRequest!!)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                    .setAudioAttributes(playbackAttributes)
+                    .setAcceptsDelayedFocusGain(true)
+                    .setOnAudioFocusChangeListener(audioFocusChangeListener)
+                    .build()
             }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                res = audioManager.requestAudioFocus(focusRequest!!)
+            }
+        }
 
 
             // Your app has been granted audio focus
@@ -135,6 +141,7 @@ class AudioService : Service() {
         return START_NOT_STICKY
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onDestroy() {
 
         if (_mediaPlayer != null) {

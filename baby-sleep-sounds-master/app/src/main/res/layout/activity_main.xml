@@ -57,8 +57,8 @@
 
     <GridView
         android:id="@+id/gridView"
-        android:layout_width="394dp"
-        android:layout_height="255dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:choiceMode="singleChoice"
         android:gravity="center"
         android:horizontalSpacing="8dp"
@@ -67,7 +67,7 @@
         android:verticalSpacing="8dp"
         app:layout_constraintBottom_toTopOf="@+id/recentlyadded"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.25"
+        app:layout_constraintHeight_percent="0.20"
         app:layout_constraintHorizontal_bias="0.444"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -87,12 +87,14 @@
 
     <Spinner
         android:id="@+id/sleepTimerSpinner"
-        android:layout_width="283dp"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:drawSelectorOnTop="true"
         app:layout_constraintBottom_toTopOf="@+id/button"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/sleep_timer_label"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
         app:layout_constraintVertical_bias="1.0" />
 
@@ -110,15 +112,13 @@
 
     <ImageView
         android:id="@+id/playingSound"
-        android:layout_width="209dp"
-        android:layout_height="206dp"
-        android:layout_marginTop="72dp"
-        android:layout_marginBottom="12dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toTopOf="@+id/sleepTimerSpinner"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/toolbar"
-        app:layout_constraintVertical_bias="0.333"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
         tools:srcCompat="@tools:sample/avatars" />
 
     <TextView
@@ -133,12 +133,12 @@
 
     <GridView
         android:id="@+id/gridView_ajoute"
-        android:layout_width="409dp"
-        android:layout_height="229dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_marginBottom="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.25"
+        app:layout_constraintHeight_percent="0.20"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent" />
 
