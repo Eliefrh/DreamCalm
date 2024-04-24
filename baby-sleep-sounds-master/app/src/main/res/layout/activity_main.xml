@@ -58,8 +58,9 @@
 
     <GridView
         android:id="@+id/gridView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="406dp"
+        android:layout_height="270dp"
+        android:layout_marginBottom="8dp"
         android:choiceMode="singleChoice"
         android:gravity="center"
         android:horizontalSpacing="8dp"
@@ -69,7 +70,7 @@
         app:layout_constraintBottom_toTopOf="@+id/recentlyadded"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.20"
-        app:layout_constraintHorizontal_bias="0.444"
+        app:layout_constraintHorizontal_bias="0.4"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
@@ -84,7 +85,7 @@
         app:layout_constraintBottom_toTopOf="@+id/button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        app:layout_constraintVertical_bias="0.992" />
+        app:layout_constraintVertical_bias="0.941" />
 
     <Spinner
         android:id="@+id/sleepTimerSpinner"
@@ -95,9 +96,10 @@
         android:drawSelectorOnTop="true"
         app:layout_constraintBottom_toTopOf="@+id/button"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/sleep_timer_label"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintVertical_bias="0.94" />
 
     <Button
         android:id="@+id/button"
@@ -115,17 +117,21 @@
         android:id="@+id/playingSound"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="10dp"
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toTopOf="@+id/sleepTimerSpinner"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:layout_constraintVertical_bias="1.0"
         tools:srcCompat="@tools:sample/avatars" />
 
     <TextView
         android:id="@+id/recentlyadded"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         android:text="@string/recentlyadded"
         app:layout_constraintBottom_toTopOf="@+id/gridView_ajoute"
         app:layout_constraintEnd_toEndOf="parent"
@@ -142,6 +148,17 @@
         app:layout_constraintHeight_percent="0.20"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/fleshImg"
+        android:layout_width="23dp"
+        android:layout_height="19dp"
+        android:layout_marginStart="4dp"
+        app:layout_constraintBottom_toTopOf="@+id/gridView_ajoute"
+        app:layout_constraintStart_toEndOf="@+id/recentlyadded"
+        app:layout_constraintTop_toBottomOf="@+id/gridView"
+        app:layout_constraintVertical_bias="0.333"
+        app:srcCompat="@android:drawable/ic_menu_more" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

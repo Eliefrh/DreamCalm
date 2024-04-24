@@ -23,8 +23,8 @@
 
     <GridView
         android:id="@+id/gridView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="487dp"
+        android:layout_height="193dp"
         android:choiceMode="singleChoice"
         android:gravity="center"
         android:horizontalSpacing="8dp"
@@ -49,8 +49,8 @@
 
     <GridView
         android:id="@+id/gridView_ajoute"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="487dp"
+        android:layout_height="132dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.45"

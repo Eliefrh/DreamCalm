@@ -38,6 +38,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import com.google.common.collect.ImmutableMap
 import nl.bravobit.ffmpeg.ExecuteBinaryResponseHandler
 import nl.bravobit.ffmpeg.FFmpeg
@@ -203,12 +204,27 @@ class MainActivity : AppCompatActivity() {
         val adapter = SoundAdapter(this, soundItems)
         gridviewSound.adapter = adapter
 
+        val addedText : TextView = findViewById(R.id.recentlyadded)
+
+
 
         val addedGridView = findViewById<GridView>(R.id.gridView_ajoute)
         val addedAdapter = AddedSoundAdapter(this, addedSoundItem)
         addedGridView.adapter = addedAdapter
+        val addedFlesh : ImageView = findViewById(R.id.fleshImg)
+
+        addedFlesh.setOnClickListener{
+            if (addedGridView.visibility == View.VISIBLE) {
+                addedGridView.visibility = View.GONE
+            } else {
+                addedGridView.visibility = View.VISIBLE
+            }
+        }
+
+
         var playingMusicImg = findViewById<ImageView>(R.id.playingSound)
         playingMusicImg.setImageResource(R.mipmap.campfire_foreground)
+
 
         gridviewSound.setOnItemClickListener { parent, view, position, id ->
             if (donnesVM.isGridViewClickable) {
