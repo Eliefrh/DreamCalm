@@ -72,7 +72,7 @@
     <string name="settings">Settings</string>
     <string name="theme_dark">Dark</string>
     <string name="theme_light">Light</string>
-    <string name="recentlyadded">Recently added:</string>
+    <string name="recentlyadded">Added sounds:</string>
     <string name="descriptionRecording">Record a sound</string>
     <string name="descriptionUploading">Upload a sound</string>
     <string name="saveFile">Save</string>
