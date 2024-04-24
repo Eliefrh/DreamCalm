@@ -22,17 +22,17 @@
 
     <GridView
         android:id="@+id/gridView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="487dp"
+        android:layout_height="193dp"
         android:choiceMode="singleChoice"
         android:gravity="center"
         android:horizontalSpacing="8dp"
         android:numColumns="3"
         android:padding="8dp"
         android:verticalSpacing="8dp"
-        app:layout_constraintHeight_percent="0.30"
         app:layout_constraintBottom_toTopOf="@+id/recentlyadded"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.30"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
         app:layout_constraintWidth_percent="0.55" />
 
@@ -48,8 +48,8 @@
 
     <GridView
         android:id="@+id/gridView_ajoute"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="487dp"
+        android:layout_height="132dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.45"
