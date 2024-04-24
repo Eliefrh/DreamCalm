@@ -800,6 +800,7 @@ class MainActivity : AppCompatActivity() {
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
             }
+
         }
         return super.onCreateOptionsMenu(menu)
     }

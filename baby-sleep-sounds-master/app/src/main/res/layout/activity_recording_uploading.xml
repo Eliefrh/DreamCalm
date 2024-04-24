@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/colorBackgroundLight">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -20,7 +21,7 @@
         android:layout_width="150dp"
         android:layout_height="150dp"
         android:layout_marginTop="40dp"
-        android:background="@color/colorPrimaryPale"
+        android:background="@color/colorPrimary"
         android:foreground="@drawable/images"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.501"
@@ -31,7 +32,7 @@
         android:id="@+id/uploadingButton"
         android:layout_width="150dp"
         android:layout_height="150dp"
-        android:background="@color/colorPrimaryPale"
+        android:background="@color/colorPrimary"
         android:foreground="@drawable/add_music_multimedia_svgrepo_com"
         app:layout_constraintBottom_toTopOf="@+id/descriptionUploading"
         app:layout_constraintEnd_toEndOf="parent"

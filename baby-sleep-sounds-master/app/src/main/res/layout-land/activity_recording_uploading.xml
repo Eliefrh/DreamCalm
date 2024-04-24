@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/colorBackgroundLight">
 
     <Button
         android:id="@+id/playSound"
@@ -83,20 +84,20 @@
         android:id="@+id/uploadingButton"
         android:layout_width="150dp"
         android:layout_height="150dp"
-        android:background="@color/colorPrimaryPale"
+        android:background="@color/colorPrimary"
         android:foreground="@drawable/add_music_multimedia_svgrepo_com"
-        app:layout_constraintBottom_toTopOf="@+id/descriptionUploading"
+        app:layout_constraintBottom_toBottomOf="@+id/recordingButton"
         app:layout_constraintEnd_toStartOf="@+id/playSound"
         app:layout_constraintHorizontal_bias="0.74"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:layout_constraintTop_toTopOf="@+id/recordingButton"
         app:layout_constraintVertical_bias="0.604" />
 
     <ImageButton
         android:id="@+id/recordingButton"
         android:layout_width="150dp"
         android:layout_height="150dp"
-        android:background="@color/colorPrimaryPale"
+        android:background="@color/colorPrimary"
         android:foreground="@drawable/images"
         app:layout_constraintBottom_toTopOf="@+id/descriptionRecording"
         app:layout_constraintEnd_toStartOf="@+id/uploadingButton"
