@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/visibi"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorBackgroundLight"
@@ -25,10 +26,11 @@
         android:id="@+id/gridView"
         android:layout_width="487dp"
         android:layout_height="193dp"
+        android:layout_marginTop="3dp"
         android:choiceMode="singleChoice"
         android:gravity="center"
         android:horizontalSpacing="8dp"
-        android:numColumns="3"
+        android:numColumns="4"
         android:padding="8dp"
         android:verticalSpacing="8dp"
         app:layout_constraintBottom_toTopOf="@+id/recentlyadded"
@@ -41,11 +43,23 @@
         android:id="@+id/recentlyadded"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
         android:text="@string/recentlyadded"
         app:layout_constraintBottom_toTopOf="@+id/gridView_ajoute"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.75"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintHorizontal_bias="0.017"
+        app:layout_constraintStart_toEndOf="@+id/playingSound" />
+
+    <ImageView
+        android:id="@+id/fleshImg"
+        android:layout_width="23dp"
+        android:layout_height="19dp"
+        android:layout_marginStart="4dp"
+        app:layout_constraintBottom_toTopOf="@+id/gridView_ajoute"
+        app:layout_constraintStart_toEndOf="@+id/recentlyadded"
+        app:layout_constraintTop_toBottomOf="@+id/gridView"
+        app:layout_constraintVertical_bias="1.0"
+        app:srcCompat="@android:drawable/ic_menu_more" />
 
     <GridView
         android:id="@+id/gridView_ajoute"

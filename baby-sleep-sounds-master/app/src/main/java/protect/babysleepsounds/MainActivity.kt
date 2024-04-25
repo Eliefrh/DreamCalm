@@ -211,6 +211,7 @@ class MainActivity : AppCompatActivity() {
         val addedGridView = findViewById<GridView>(R.id.gridView_ajoute)
         val addedAdapter = AddedSoundAdapter(this, addedSoundItem)
         addedGridView.adapter = addedAdapter
+        addedGridView.visibility = View.GONE
         val addedFlesh : ImageView = findViewById(R.id.fleshImg)
 
         addedFlesh.setOnClickListener{
