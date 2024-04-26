@@ -38,6 +38,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.bumptech.glide.Glide
 import com.google.common.collect.ImmutableMap
 import nl.bravobit.ffmpeg.ExecuteBinaryResponseHandler
 import nl.bravobit.ffmpeg.FFmpeg
@@ -187,6 +188,9 @@ class MainActivity : AppCompatActivity() {
         val filesDir = filesDir
 
 
+
+
+
         // Initialize BluetoothAdapter
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         if (bluetoothAdapter == null) {
@@ -235,6 +239,9 @@ class MainActivity : AppCompatActivity() {
 
         var playingMusicImg = findViewById<ImageView>(R.id.playingSound)
         playingMusicImg.setImageResource(R.mipmap.campfire_foreground)
+        Glide.with(this)
+            .load(R.drawable.campfire)
+            .into(playingMusicImg)
 
 
         gridviewSound.setOnItemClickListener { parent, view, position, id ->
@@ -532,7 +539,7 @@ class MainActivity : AppCompatActivity() {
         //   which should create a seamless track appropriate for looping
         // - Save as a mp3 file, 128kbps, stereo
         _soundMap =
-            ImmutableMap.builder<Int, Int>().put(R.mipmap.campfire_foreground, R.raw.campfire)
+            ImmutableMap.builder<Int, Int>().put(R.mipmap.campfire_gif, R.raw.campfire)
                 .put(R.mipmap.dryer_foreground, R.raw.dryer)
                 .put(R.mipmap.fan_foreground, R.raw.fan)
                 .put(R.mipmap.ocean_foreground, R.raw.ocean)
