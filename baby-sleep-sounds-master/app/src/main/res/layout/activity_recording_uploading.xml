@@ -33,7 +33,7 @@
         android:layout_width="150dp"
         android:layout_height="150dp"
         android:background="@color/colorPrimary"
-        android:foreground="@drawable/add_music_multimedia_svgrepo_com"
+        android:foreground="@drawable/add_music_multimedia_svgrepo_com_noire"
         app:layout_constraintBottom_toTopOf="@+id/descriptionUploading"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"

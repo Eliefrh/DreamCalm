@@ -85,7 +85,7 @@
         android:layout_width="150dp"
         android:layout_height="150dp"
         android:background="@color/colorPrimary"
-        android:foreground="@drawable/add_music_multimedia_svgrepo_com"
+        android:foreground="@drawable/add_music_multimedia_svgrepo_com_noire"
         app:layout_constraintBottom_toBottomOf="@+id/recordingButton"
         app:layout_constraintEnd_toStartOf="@+id/playSound"
         app:layout_constraintHorizontal_bias="0.74"
