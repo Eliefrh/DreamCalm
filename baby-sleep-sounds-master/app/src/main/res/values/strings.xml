@@ -72,6 +72,8 @@
     <string name="settings">Settings</string>
     <string name="theme_dark">Dark</string>
     <string name="theme_light">Light</string>
+    <string name="howToDelete">Delete an added Sound</string>
+    <string name="how_to_delete_sound_content">To delete an added sound, please follow these steps:\n\n1. Long press on the sound you wish to delete.\n2. A dialog box will appear to ask for confirmation.\n3. Press \"Yes\" to confirm deletion or \"No\" to cancel.\n4. The sound will be permanently removed from the list.\n\nPlease note that deleted sounds cannot be recovered, so ensure you want to delete the sound before confirming.</string>
     <string name="recentlyadded">Added sounds:</string>
     <string name="descriptionRecording">Record a sound</string>
     <string name="descriptionUploading">Upload a sound</string>

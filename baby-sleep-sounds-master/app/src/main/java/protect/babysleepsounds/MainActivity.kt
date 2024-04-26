@@ -846,10 +846,24 @@ class MainActivity : AppCompatActivity() {
             }
             startActivity(Intent(this, RecordingUploadingActivity::class.java))
             return true
+        }else if (id == R.id.action_supprimer){
+            showHowToDeleteSoundDialog()
+            true
         }
         return super.onOptionsItemSelected(item)
     }
+    private fun showHowToDeleteSoundDialog() {
+        val dialogTitle = getString(R.string.howToDelete)
+        val dialogContent = getString(R.string.how_to_delete_sound_content)
 
+        AlertDialog.Builder(this)
+            .setTitle(dialogTitle)
+            .setMessage(dialogContent)
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
 
     private fun scanSoundFolder() {
         val soundDirectory =

@@ -17,5 +17,5 @@
         app:showAsAction="never"/>
     <item
         android:id="@+id/action_supprimer"
-        android:title="how to Delete a " />
+        android:title="@string/howToDelete" />
 </menu>
