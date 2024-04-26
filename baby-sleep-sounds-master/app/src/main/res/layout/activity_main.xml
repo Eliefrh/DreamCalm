@@ -70,7 +70,7 @@
         android:verticalSpacing="8dp"
         app:layout_constraintBottom_toTopOf="@+id/recentlyadded"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.20"
+        app:layout_constraintHeight_percent="0.35"
         app:layout_constraintHorizontal_bias="0.4"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -106,7 +106,6 @@
         android:id="@+id/button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:enabled="true"
         android:text="@string/play"
         app:layout_constraintBottom_toTopOf="@+id/gridView"
@@ -118,7 +117,6 @@
         android:id="@+id/playingSound"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="10dp"
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toTopOf="@+id/sleepTimerSpinner"
         app:layout_constraintEnd_toEndOf="parent"
@@ -143,10 +141,9 @@
         android:id="@+id/gridView_ajoute"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginBottom="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.20"
+        app:layout_constraintHeight_percent="0.15"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent" />
 
