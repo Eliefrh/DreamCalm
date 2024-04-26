@@ -38,7 +38,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.isVisible
 import com.google.common.collect.ImmutableMap
 import nl.bravobit.ffmpeg.ExecuteBinaryResponseHandler
 import nl.bravobit.ffmpeg.FFmpeg
@@ -209,6 +208,7 @@ class MainActivity : AppCompatActivity() {
 
 
         val addedGridView = findViewById<GridView>(R.id.gridView_ajoute)
+        val parentView = findViewById<View>(R.id.visibil)
         val addedAdapter = AddedSoundAdapter(this, addedSoundItem)
         addedGridView.adapter = addedAdapter
         addedGridView.visibility = View.GONE
@@ -217,8 +217,18 @@ class MainActivity : AppCompatActivity() {
         addedFlesh.setOnClickListener{
             if (addedGridView.visibility == View.VISIBLE) {
                 addedGridView.visibility = View.GONE
+                if (parentView != null) {
+
+                val params = gridviewSound.layoutParams
+                params.height = (parentView.height * 0.75).toInt() // 80% of the parent view's height
+                gridviewSound.layoutParams = params}
             } else {
                 addedGridView.visibility = View.VISIBLE
+                if (parentView != null) {
+                    val params = gridviewSound.layoutParams
+                params.height = (parentView.height * 0.3).toInt() // 80% of the parent view's height
+                gridviewSound.layoutParams = params
+                }
             }
         }
 

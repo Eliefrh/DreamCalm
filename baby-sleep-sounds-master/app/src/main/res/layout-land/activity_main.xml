@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/visibi"
+    android:id="@+id/visibil"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorBackgroundLight"
@@ -24,9 +24,8 @@
 
     <GridView
         android:id="@+id/gridView"
-        android:layout_width="487dp"
-        android:layout_height="193dp"
-        android:layout_marginTop="3dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:choiceMode="singleChoice"
         android:gravity="center"
         android:horizontalSpacing="8dp"
@@ -35,8 +34,7 @@
         android:verticalSpacing="8dp"
         app:layout_constraintBottom_toTopOf="@+id/recentlyadded"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.30"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:layout_constraintHeight_percent="0.75"
         app:layout_constraintWidth_percent="0.55" />
 
     <TextView
@@ -63,8 +61,8 @@
 
     <GridView
         android:id="@+id/gridView_ajoute"
-        android:layout_width="487dp"
-        android:layout_height="132dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.45"
