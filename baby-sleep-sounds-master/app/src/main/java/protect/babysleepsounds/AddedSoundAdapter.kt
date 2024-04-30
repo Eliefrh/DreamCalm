@@ -35,6 +35,7 @@ class AddedSoundAdapter(
 
         val iconImageView = itemView.findViewById<ImageView>(R.id.icon)
         val nameTextView = itemView.findViewById<TextView>(R.id.name)
+        val dateTextView = itemView.findViewById<TextView>(R.id.date)
 
         // Set the image resource for the ImageView
         iconImageView.setImageResource(soundItems[position].imageResId)
@@ -45,6 +46,7 @@ class AddedSoundAdapter(
 
         // Set the extracted name in the TextView
         nameTextView.text = name
+        dateTextView.text = soundItems[position].creationDate
 
         if (position == selectedItemPosition) {
             itemView.setBackgroundResource(R.color.colorPrimary)
@@ -54,7 +56,6 @@ class AddedSoundAdapter(
 
         return itemView
     }
-
     private fun extractNameFromFileName(fileName: String): String {
         // Split the file name at underscores and extract the second part
         val parts = fileName.split("_")
