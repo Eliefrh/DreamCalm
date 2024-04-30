@@ -239,8 +239,9 @@ class MainActivity : AppCompatActivity() {
 
         var playingMusicImg = findViewById<ImageView>(R.id.playingSound)
         playingMusicImg.setImageResource(R.mipmap.campfire_foreground)
+
         Glide.with(this)
-            .load(R.drawable.campfire)
+            .load(R.drawable.dryer)
             .into(playingMusicImg)
 
 
@@ -539,7 +540,7 @@ class MainActivity : AppCompatActivity() {
         //   which should create a seamless track appropriate for looping
         // - Save as a mp3 file, 128kbps, stereo
         _soundMap =
-            ImmutableMap.builder<Int, Int>().put(R.mipmap.campfire_gif, R.raw.campfire)
+            ImmutableMap.builder<Int, Int>().put(R.mipmap.campfire_foreground, R.raw.campfire)
                 .put(R.mipmap.dryer_foreground, R.raw.dryer)
                 .put(R.mipmap.fan_foreground, R.raw.fan)
                 .put(R.mipmap.ocean_foreground, R.raw.ocean)
