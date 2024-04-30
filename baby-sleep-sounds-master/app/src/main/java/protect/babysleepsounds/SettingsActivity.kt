@@ -16,7 +16,7 @@ import androidx.preference.SwitchPreferenceCompat
 class SettingsActivity : AppCompatActivity() {
 
 
-        override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
@@ -24,9 +24,9 @@ class SettingsActivity : AppCompatActivity() {
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         supportFragmentManager.beginTransaction().replace(R.id.settings_wrapper, Fragment())
             .commit()
+        val startIntentMedia = Intent(this@SettingsActivity, MediaPlaybackService::class.java)
+        startService(startIntentMedia)
 
-            val startIntentMedia = Intent(this@SettingsActivity, MediaPlaybackService::class.java)
-            startService(startIntentMedia)
     }
 
     class Fragment : PreferenceFragmentCompat() {
@@ -38,10 +38,11 @@ class SettingsActivity : AppCompatActivity() {
             filterCutoff!!.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { preference, newValue ->
                     updateCutoffSummary(newValue as Int)
-                    
+
                     Preferences[activity]?.setLowPassFilterFrequency(newValue)
                     true
                 }
+
             val filterEnabled = findPreference<SwitchPreferenceCompat>("filter_enabled")
             filterEnabled!!.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { preference, newValue ->
@@ -49,6 +50,8 @@ class SettingsActivity : AppCompatActivity() {
 
                     true
                 }
+            toggleCutoff(true)
+
             theme = findPreference("theme")
             theme!!.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { preference, newValue ->

@@ -110,7 +110,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
                 buttonRecording.setBackgroundColor(
                     ContextCompat.getColor(
                         this,
-                        R.color.colorPrimary
+                        R.color.colorPrimaryPale
                     )
                 )
                 startRecording()}
@@ -118,7 +118,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
                 buttonRecording.setBackgroundColor(
                     ContextCompat.getColor(
                         this,
-                        R.color.colorPrimaryPale
+                        R.color.colorPrimary
                     )
                 )
                 stopRecording()

@@ -1,6 +1,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/action_add_own"
+        android:icon="@drawable/add_music_multimedia_svgrepo_com"
+        android:title="action_add_own"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_settings"
         android:title="@string/settings"
         android:icon="@drawable/ic_settings"
@@ -11,6 +16,6 @@
         android:title="@string/about"
         app:showAsAction="never"/>
     <item
-        android:id="@+id/action_add_own"
-        android:title="@string/action_add_own" />
+        android:id="@+id/action_supprimer"
+        android:title="@string/howToDelete" />
 </menu>
