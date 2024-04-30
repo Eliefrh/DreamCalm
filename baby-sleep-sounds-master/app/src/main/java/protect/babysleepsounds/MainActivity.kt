@@ -188,9 +188,6 @@ class MainActivity : AppCompatActivity() {
         val filesDir = filesDir
 
 
-
-
-
         // Initialize BluetoothAdapter
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         if (bluetoothAdapter == null) {
@@ -207,8 +204,7 @@ class MainActivity : AppCompatActivity() {
         val adapter = SoundAdapter(this, soundItems)
         gridviewSound.adapter = adapter
 
-        val addedText : TextView = findViewById(R.id.recentlyadded)
-
+        val addedText: TextView = findViewById(R.id.recentlyadded)
 
 
         val addedGridView = findViewById<GridView>(R.id.gridView_ajoute)
@@ -216,22 +212,25 @@ class MainActivity : AppCompatActivity() {
         val addedAdapter = AddedSoundAdapter(this, addedSoundItem)
         addedGridView.adapter = addedAdapter
         addedGridView.visibility = View.GONE
-        val addedFlesh : ImageView = findViewById(R.id.fleshImg)
+        val addedFlesh: ImageView = findViewById(R.id.fleshImg)
 
-        addedFlesh.setOnClickListener{
+        addedFlesh.setOnClickListener {
             if (addedGridView.visibility == View.VISIBLE) {
                 addedGridView.visibility = View.GONE
                 if (parentView != null) {
 
-                val params = gridviewSound.layoutParams
-                params.height = (parentView.height * 0.75).toInt() // 80% of the parent view's height
-                gridviewSound.layoutParams = params}
+                    val params = gridviewSound.layoutParams
+                    params.height =
+                        (parentView.height * 0.75).toInt() // 80% of the parent view's height
+                    gridviewSound.layoutParams = params
+                }
             } else {
                 addedGridView.visibility = View.VISIBLE
                 if (parentView != null) {
                     val params = gridviewSound.layoutParams
-                params.height = (parentView.height * 0.3).toInt() // 80% of the parent view's height
-                gridviewSound.layoutParams = params
+                    params.height =
+                        (parentView.height * 0.3).toInt() // 80% of the parent view's height
+                    gridviewSound.layoutParams = params
                 }
             }
         }
@@ -241,7 +240,7 @@ class MainActivity : AppCompatActivity() {
         playingMusicImg.setImageResource(R.mipmap.campfire_foreground)
 
         Glide.with(this)
-            .load(R.drawable.dryer)
+            .load(R.drawable.campfire)
             .into(playingMusicImg)
 
 
@@ -854,12 +853,13 @@ class MainActivity : AppCompatActivity() {
             }
             startActivity(Intent(this, RecordingUploadingActivity::class.java))
             return true
-        }else if (id == R.id.action_supprimer){
+        } else if (id == R.id.action_supprimer) {
             showHowToDeleteSoundDialog()
             true
         }
         return super.onOptionsItemSelected(item)
     }
+
     private fun showHowToDeleteSoundDialog() {
         val dialogTitle = getString(R.string.howToDelete)
         val dialogContent = getString(R.string.how_to_delete_sound_content)
