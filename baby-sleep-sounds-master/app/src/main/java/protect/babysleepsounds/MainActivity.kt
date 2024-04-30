@@ -52,8 +52,7 @@ import java.util.Locale
 
 
 data class SoundItem(val imageResId: Int)
-data class AddedSoundItem(val imageResId: Int, val path: String, val name: String)
-
+data class AddedSoundItem(val imageResId: Int, val path: String, val name: String, val creationDate: String)
 class MainActivity : AppCompatActivity() {
     val donnesVM: MainActivityViewModel by viewModels()
     private var _soundMap: Map<Int, Int>? = null
@@ -374,7 +373,8 @@ class MainActivity : AppCompatActivity() {
                                 addedSoundItem[position] = AddedSoundItem(
                                     addedSoundItem[position].imageResId,
                                     newFile.absolutePath,
-                                    newName
+                                    newName,
+                                    addedSoundItem[position].creationDate
                                 )
                                 addedAdapter.notifyDataSetChanged()
                                 Toast.makeText(
@@ -878,13 +878,12 @@ class MainActivity : AppCompatActivity() {
             for (soundFile in soundFiles) {
                 // Extract the name of the sound from its path
                 val soundName = soundFile.nameWithoutExtension
+
+                // Get the creation date of the file
+// Get the creation date of the file
+                val creationDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(soundFile.lastModified())
                 // Use the actual path of the sound file for AddedSoundItem
-                val addedSound =
-                    AddedSoundItem(
-                        R.mipmap.music_notes_foreground,
-                        soundFile.absolutePath,
-                        soundName
-                    )
+                val addedSound = AddedSoundItem(R.mipmap.music_notes_foreground, soundFile.absolutePath, soundName, creationDate)
                 addedSoundItem.add(addedSound)
             }
         }

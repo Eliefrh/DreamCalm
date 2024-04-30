@@ -69,7 +69,7 @@
     <string name="recorded">Son enregistré</string>
     <string name="boutonAppuyer">Appliquer</string>
     <string name="action_add_own">Ajout de son</string>
-    <string name="howToDelete">Supprimer un son ajouté</string>
+    <string name="howToDelete">Comment supprimer un son ajouté</string>
     <string name="how_to_delete_sound_content">Pour supprimer un son ajouté, veuillez suivre ces étapes :\n\n1. Appuyez longuement sur le son que vous souhaitez supprimer.\n2. Une boîte de dialogue apparaîtra pour demander confirmation.\n3. Appuyez sur \"Oui\" pour confirmer la suppression ou \"Non\" pour annuler.\n4. Le son sera supprimé définitivement de la liste.\n\nVeuillez noter que les sons supprimés ne peuvent pas être récupérés, donc assurez-vous de vouloir supprimer le son avant de confirmer.</string>
     <string name="confirm_action">Confirmer l\'action</string>
     <string name="choose_action">Choisir une action</string>
