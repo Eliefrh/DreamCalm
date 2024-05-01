@@ -155,8 +155,8 @@ class MainActivity : AppCompatActivity() {
         if (donnesVM.selectedImageposition == null) {
             (gridviewSound.adapter as SoundAdapter).setSelectedItem(0)
         }
-        donnesVM.selectedImageposition = 0
-        donnesVM.itemSelected = true
+//        donnesVM.selectedImageposition = 0
+//        donnesVM.itemSelected = true
 
 
         if (donnesVM.isPlaying) {
@@ -239,9 +239,31 @@ class MainActivity : AppCompatActivity() {
         var playingMusicImg = findViewById<ImageView>(R.id.playingSound)
         playingMusicImg.setImageResource(R.mipmap.campfire_foreground)
 
-        Glide.with(this)
-            .load(R.drawable.campfire)
-            .into(playingMusicImg)
+        if (donnesVM.choosedGrid == 1) {
+            var choosenGif: Int? = null
+            when (donnesVM.selectedImageposition) {
+                0 -> choosenGif = R.drawable.campfire
+                1 -> choosenGif = R.drawable.dryer
+                2 -> choosenGif = R.drawable.fan
+                3 -> choosenGif = R.drawable.ocean
+                4 -> choosenGif = R.drawable.rain
+                5 -> choosenGif = R.drawable.refrigerator
+                6 -> choosenGif = R.drawable.shhhh
+                7 -> choosenGif = R.drawable.shower
+                8 -> choosenGif = R.drawable.stream
+                9 -> choosenGif = R.drawable.vacuum
+                10 -> choosenGif = R.drawable.water
+                11 -> choosenGif = R.drawable.waterfall
+                12 -> choosenGif = R.drawable.waves
+                13 -> choosenGif = R.drawable.white_noise
+            }
+            Glide.with(this)
+                .load(choosenGif)
+                .into(playingMusicImg)
+
+        }
+
+
 
 
         gridviewSound.setOnItemClickListener { parent, view, position, id ->
@@ -259,6 +281,29 @@ class MainActivity : AppCompatActivity() {
 
                 //highlight the selected item
                 (gridviewSound.adapter as SoundAdapter).setSelectedItem(donnesVM.selectedImageposition!!)
+                var choosenGif: Int? = null
+
+
+                when (donnesVM.selectedImageposition) {
+                    0 -> choosenGif = R.drawable.campfire
+                    1 -> choosenGif = R.drawable.dryer
+                    2 -> choosenGif = R.drawable.fan
+                    3 -> choosenGif = R.drawable.ocean
+                    4 -> choosenGif = R.drawable.rain
+                    5 -> choosenGif = R.drawable.refrigerator
+                    6 -> choosenGif = R.drawable.shhhh
+                    7 -> choosenGif = R.drawable.shower
+                    8 -> choosenGif = R.drawable.stream
+                    9 -> choosenGif = R.drawable.vacuum
+                    10 -> choosenGif = R.drawable.water
+                    11 -> choosenGif = R.drawable.waterfall
+                    12 -> choosenGif = R.drawable.waves
+                    13 -> choosenGif = R.drawable.white_noise
+                }
+                Glide.with(this)
+                    .load(choosenGif)
+                    .into(playingMusicImg)
+
 
             }
         }
@@ -275,6 +320,12 @@ class MainActivity : AppCompatActivity() {
                 playingMusicImg.setImageResource(addedSoundItem[position].imageResId)
                 donnesVM.choosedGrid = 2
                 (addedGridView.adapter as AddedSoundAdapter).setSelectedItem(donnesVM.selectedImageposition!!)
+
+
+                //AJOUT DU GIF
+                Glide.with(this)
+                    .load(R.drawable.music_notes)
+                    .into(playingMusicImg)
 
             }
         }
