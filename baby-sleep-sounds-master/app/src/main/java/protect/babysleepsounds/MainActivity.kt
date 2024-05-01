@@ -153,8 +153,7 @@ class MainActivity : AppCompatActivity() {
         if (donnesVM.selectedImageposition == null) {
             (gridviewSound.adapter as SoundAdapter).setSelectedItem(0)
         }
-        donnesVM.selectedImageposition = 0
-        donnesVM.itemSelected = true
+
 
 
         if (donnesVM.isPlaying) {
