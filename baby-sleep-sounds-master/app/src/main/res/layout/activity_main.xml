@@ -90,8 +90,8 @@
 
     <Spinner
         android:id="@+id/sleepTimerSpinner"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_width="206dp"
+        android:layout_height="26dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:drawSelectorOnTop="true"
@@ -100,7 +100,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/sleep_timer_label"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        app:layout_constraintVertical_bias="0.94" />
+        app:layout_constraintVertical_bias="0.952" />
 
     <Button
         android:id="@+id/button"
@@ -157,6 +157,19 @@
         app:layout_constraintTop_toBottomOf="@+id/gridView"
         app:layout_constraintVertical_bias="0.333"
         app:srcCompat="@android:drawable/ic_menu_more" />
+
+    <Switch
+        android:id="@+id/switch1"
+        android:layout_width="73dp"
+        android:layout_height="23dp"
+        android:checked="true"
+        android:text="Gif"
+        android:textOff="OFF"
+        app:layout_constraintBottom_toBottomOf="@+id/sleepTimerSpinner"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/sleepTimerSpinner"
+        app:layout_constraintTop_toTopOf="@+id/sleepTimerSpinner"
+        tools:checked="true" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 
