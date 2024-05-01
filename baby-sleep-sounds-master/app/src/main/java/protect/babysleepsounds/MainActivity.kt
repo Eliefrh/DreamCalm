@@ -38,6 +38,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.bumptech.glide.Glide
 import com.google.common.collect.ImmutableMap
 import nl.bravobit.ffmpeg.ExecuteBinaryResponseHandler
 import nl.bravobit.ffmpeg.FFmpeg
@@ -52,7 +53,13 @@ import java.util.Locale
 
 
 data class SoundItem(val imageResId: Int)
-data class AddedSoundItem(val imageResId: Int, val path: String, val name: String, val creationDate: String)
+data class AddedSoundItem(
+    val imageResId: Int,
+    val path: String,
+    val name: String,
+    val creationDate: String
+)
+
 class MainActivity : AppCompatActivity() {
     val donnesVM: MainActivityViewModel by viewModels()
     private var _soundMap: Map<Int, Int>? = null
@@ -155,7 +162,6 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-
         if (donnesVM.isPlaying) {
             val button = findViewById<Button>(R.id.button)
             button.setText(R.string.stop)
@@ -201,8 +207,7 @@ class MainActivity : AppCompatActivity() {
         val adapter = SoundAdapter(this, soundItems)
         gridviewSound.adapter = adapter
 
-        val addedText : TextView = findViewById(R.id.recentlyadded)
-
+        val addedText: TextView = findViewById(R.id.recentlyadded)
 
 
         val addedGridView = findViewById<GridView>(R.id.gridView_ajoute)
@@ -210,22 +215,25 @@ class MainActivity : AppCompatActivity() {
         val addedAdapter = AddedSoundAdapter(this, addedSoundItem)
         addedGridView.adapter = addedAdapter
         addedGridView.visibility = View.GONE
-        val addedFlesh : ImageView = findViewById(R.id.fleshImg)
+        val addedFlesh: ImageView = findViewById(R.id.fleshImg)
 
-        addedFlesh.setOnClickListener{
+        addedFlesh.setOnClickListener {
             if (addedGridView.visibility == View.VISIBLE) {
                 addedGridView.visibility = View.GONE
                 if (parentView != null) {
 
-                val params = gridviewSound.layoutParams
-                params.height = (parentView.height * 0.75).toInt() // 80% of the parent view's height
-                gridviewSound.layoutParams = params}
+                    val params = gridviewSound.layoutParams
+                    params.height =
+                        (parentView.height * 0.75).toInt() // 80% of the parent view's height
+                    gridviewSound.layoutParams = params
+                }
             } else {
                 addedGridView.visibility = View.VISIBLE
                 if (parentView != null) {
                     val params = gridviewSound.layoutParams
-                params.height = (parentView.height * 0.3).toInt() // 80% of the parent view's height
-                gridviewSound.layoutParams = params
+                    params.height =
+                        (parentView.height * 0.3).toInt() // 80% of the parent view's height
+                    gridviewSound.layoutParams = params
                 }
             }
         }
@@ -233,6 +241,32 @@ class MainActivity : AppCompatActivity() {
 
         var playingMusicImg = findViewById<ImageView>(R.id.playingSound)
         playingMusicImg.setImageResource(R.mipmap.campfire_foreground)
+
+        if (donnesVM.choosedGrid == 1) {
+            var choosenGif: Int? = null
+            when (donnesVM.selectedImageposition) {
+                0 -> choosenGif = R.drawable.campfire
+                1 -> choosenGif = R.drawable.dryer
+                2 -> choosenGif = R.drawable.fan
+                3 -> choosenGif = R.drawable.ocean
+                4 -> choosenGif = R.drawable.rain
+                5 -> choosenGif = R.drawable.refrigerator
+                6 -> choosenGif = R.drawable.shhhh
+                7 -> choosenGif = R.drawable.shower
+                8 -> choosenGif = R.drawable.stream
+                9 -> choosenGif = R.drawable.vacuum
+                10 -> choosenGif = R.drawable.water
+                11 -> choosenGif = R.drawable.waterfall
+                12 -> choosenGif = R.drawable.waves
+                13 -> choosenGif = R.drawable.white_noise
+            }
+            Glide.with(this)
+                .load(choosenGif)
+                .into(playingMusicImg)
+
+        }
+
+
 
 
         gridviewSound.setOnItemClickListener { parent, view, position, id ->
@@ -250,6 +284,29 @@ class MainActivity : AppCompatActivity() {
 
                 //highlight the selected item
                 (gridviewSound.adapter as SoundAdapter).setSelectedItem(donnesVM.selectedImageposition!!)
+                var choosenGif: Int? = null
+
+
+                when (donnesVM.selectedImageposition) {
+                    0 -> choosenGif = R.drawable.campfire
+                    1 -> choosenGif = R.drawable.dryer
+                    2 -> choosenGif = R.drawable.fan
+                    3 -> choosenGif = R.drawable.ocean
+                    4 -> choosenGif = R.drawable.rain
+                    5 -> choosenGif = R.drawable.refrigerator
+                    6 -> choosenGif = R.drawable.shhhh
+                    7 -> choosenGif = R.drawable.shower
+                    8 -> choosenGif = R.drawable.stream
+                    9 -> choosenGif = R.drawable.vacuum
+                    10 -> choosenGif = R.drawable.water
+                    11 -> choosenGif = R.drawable.waterfall
+                    12 -> choosenGif = R.drawable.waves
+                    13 -> choosenGif = R.drawable.white_noise
+                }
+                Glide.with(this)
+                    .load(choosenGif)
+                    .into(playingMusicImg)
+
 
             }
         }
@@ -266,6 +323,12 @@ class MainActivity : AppCompatActivity() {
                 playingMusicImg.setImageResource(addedSoundItem[position].imageResId)
                 donnesVM.choosedGrid = 2
                 (addedGridView.adapter as AddedSoundAdapter).setSelectedItem(donnesVM.selectedImageposition!!)
+
+
+                //AJOUT DU GIF
+                Glide.with(this)
+                    .load(R.drawable.music_notes)
+                    .into(playingMusicImg)
 
             }
         }
@@ -845,12 +908,13 @@ class MainActivity : AppCompatActivity() {
             }
             startActivity(Intent(this, RecordingUploadingActivity::class.java))
             return true
-        }else if (id == R.id.action_supprimer){
+        } else if (id == R.id.action_supprimer) {
             showHowToDeleteSoundDialog()
             true
         }
         return super.onOptionsItemSelected(item)
     }
+
     private fun showHowToDeleteSoundDialog() {
         val dialogTitle = getString(R.string.howToDelete)
         val dialogContent = getString(R.string.how_to_delete_sound_content)
@@ -880,9 +944,17 @@ class MainActivity : AppCompatActivity() {
 
                 // Get the creation date of the file
 // Get the creation date of the file
-                val creationDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(soundFile.lastModified())
+                val creationDate = SimpleDateFormat(
+                    "dd/MM/yyyy",
+                    Locale.getDefault()
+                ).format(soundFile.lastModified())
                 // Use the actual path of the sound file for AddedSoundItem
-                val addedSound = AddedSoundItem(R.mipmap.music_notes_foreground, soundFile.absolutePath, soundName, creationDate)
+                val addedSound = AddedSoundItem(
+                    R.mipmap.music_notes_foreground,
+                    soundFile.absolutePath,
+                    soundName,
+                    creationDate
+                )
                 addedSoundItem.add(addedSound)
             }
         }
