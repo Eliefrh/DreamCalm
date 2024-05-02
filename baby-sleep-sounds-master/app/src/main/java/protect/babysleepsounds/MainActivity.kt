@@ -73,6 +73,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var soundItems: List<SoundItem>
     lateinit var buttonPlay: Button
     lateinit var gridviewSound: GridView
+    lateinit var addedGridView: GridView
     private var addedSoundItem: MutableList<AddedSoundItem> = mutableListOf()
     private var isUserSelection = false
 
@@ -158,9 +159,16 @@ class MainActivity : AppCompatActivity() {
         scanSoundFolder()
 
 //        donnesVM.choosedGrid = 1
-        if (donnesVM.selectedImageposition == null) {
+        if (donnesVM.selectedImageposition == null && donnesVM.choosedGrid == 0) {
             (gridviewSound.adapter as SoundAdapter).setSelectedItem(0)
-        }
+        } else
+            if (donnesVM.selectedImageposition != null) {
+                if (donnesVM.choosedGrid == 1) {
+                    (gridviewSound.adapter as SoundAdapter).setSelectedItem(donnesVM.selectedImageposition!!)
+                } else if (donnesVM.choosedGrid == 2) {
+                    (addedGridView.adapter as AddedSoundAdapter).setSelectedItem(donnesVM.selectedImageposition!!)
+                }
+            }
 
 
         if (donnesVM.isPlaying) {
@@ -241,7 +249,7 @@ class MainActivity : AppCompatActivity() {
         val addedText: TextView = findViewById(R.id.recentlyadded)
 
 
-        val addedGridView = findViewById<GridView>(R.id.gridView_ajoute)
+        addedGridView = findViewById<GridView>(R.id.gridView_ajoute)
         val parentView = findViewById<View>(R.id.visibil)
         val addedAdapter = AddedSoundAdapter(this, addedSoundItem)
         addedGridView.adapter = addedAdapter
