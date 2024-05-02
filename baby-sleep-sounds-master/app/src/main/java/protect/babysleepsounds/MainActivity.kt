@@ -29,6 +29,7 @@ import android.widget.EditText
 import android.widget.GridView
 import android.widget.ImageView
 import android.widget.Spinner
+import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -168,6 +169,11 @@ class MainActivity : AppCompatActivity() {
             setControlsEnabled(true)
         }
 
+        if (donnesVM.isSwitch1On) {
+            initialiserGif(true, findViewById(R.id.playingSound))
+        } else {
+            initialiserGif(false, findViewById(R.id.playingSound))
+        }
         super.onStart()
     }
 
@@ -189,6 +195,31 @@ class MainActivity : AppCompatActivity() {
             donnesVM.isPlaying = false
         }
         val filesDir = filesDir
+        var playingMusicImg = findViewById<ImageView>(R.id.playingSound)
+
+
+        //Switch pour turn on/off les Gifs
+        val switch1 = findViewById<Switch>(R.id.switch1)
+        switch1.isChecked = donnesVM.isSwitch1On
+//        donnesVM.isSwitch1On = switch1.isChecked
+//        switch1.isChecked = donnesVM.isSwitch1On
+
+        switch1.setOnCheckedChangeListener { _, isChecked ->
+//            donnesVM.isSwitch1On = isChecked
+
+            if (isChecked == true) {
+                switch1.text = "Gif"
+                donnesVM.isSwitch1On = isChecked
+            } else {
+                switch1.text = "Icon"
+                donnesVM.isSwitch1On = isChecked
+            }
+
+            initialiserGif(donnesVM.isSwitch1On, playingMusicImg)
+
+        }
+
+//        initialiserGif(donnesVM.isSwitch1On, playingMusicImg)
 
 
         // Initialize BluetoothAdapter
@@ -239,34 +270,35 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        var playingMusicImg = findViewById<ImageView>(R.id.playingSound)
         playingMusicImg.setImageResource(R.mipmap.campfire_foreground)
 
-        if (donnesVM.choosedGrid == 1) {
-            var choosenGif: Int? = null
-            when (donnesVM.selectedImageposition) {
-                0 -> choosenGif = R.drawable.campfire
-                1 -> choosenGif = R.drawable.dryer
-                2 -> choosenGif = R.drawable.fan
-                3 -> choosenGif = R.drawable.ocean
-                4 -> choosenGif = R.drawable.rain
-                5 -> choosenGif = R.drawable.refrigerator
-                6 -> choosenGif = R.drawable.shhhh
-                7 -> choosenGif = R.drawable.shower
-                8 -> choosenGif = R.drawable.stream
-                9 -> choosenGif = R.drawable.vacuum
-                10 -> choosenGif = R.drawable.water
-                11 -> choosenGif = R.drawable.waterfall
-                12 -> choosenGif = R.drawable.waves
-                13 -> choosenGif = R.drawable.white_noise
-            }
-            Glide.with(this)
-                .load(choosenGif)
-                .into(playingMusicImg)
-
-        }
-
-
+//        if (donnesVM.choosedGrid == 1) {
+//            var choosenGif: Int? = null
+//            if (isSwitch1On) {
+//                when (donnesVM.selectedImageposition) {
+//                    0 -> choosenGif = R.drawable.campfire
+//                    1 -> choosenGif = R.drawable.dryer
+//                    2 -> choosenGif = R.drawable.fan
+//                    3 -> choosenGif = R.drawable.ocean
+//                    4 -> choosenGif = R.drawable.rain
+//                    5 -> choosenGif = R.drawable.refrigerator
+//                    6 -> choosenGif = R.drawable.shhhh
+//                    7 -> choosenGif = R.drawable.shower
+//                    8 -> choosenGif = R.drawable.stream
+//                    9 -> choosenGif = R.drawable.vacuum
+//                    10 -> choosenGif = R.drawable.water
+//                    11 -> choosenGif = R.drawable.waterfall
+//                    12 -> choosenGif = R.drawable.waves
+//                    13 -> choosenGif = R.drawable.white_noise
+//                }
+//
+//                Glide.with(this)
+//                    .load(choosenGif)
+//                    .into(playingMusicImg)
+//            }else{
+//                playingMusicImg.setImageResource(soundItems[donnesVM.selectedImageposition!!].imageResId)
+//            }
+//        }
 
 
         gridviewSound.setOnItemClickListener { parent, view, position, id ->
@@ -284,30 +316,35 @@ class MainActivity : AppCompatActivity() {
 
                 //highlight the selected item
                 (gridviewSound.adapter as SoundAdapter).setSelectedItem(donnesVM.selectedImageposition!!)
-                var choosenGif: Int? = null
 
-
-                when (donnesVM.selectedImageposition) {
-                    0 -> choosenGif = R.drawable.campfire
-                    1 -> choosenGif = R.drawable.dryer
-                    2 -> choosenGif = R.drawable.fan
-                    3 -> choosenGif = R.drawable.ocean
-                    4 -> choosenGif = R.drawable.rain
-                    5 -> choosenGif = R.drawable.refrigerator
-                    6 -> choosenGif = R.drawable.shhhh
-                    7 -> choosenGif = R.drawable.shower
-                    8 -> choosenGif = R.drawable.stream
-                    9 -> choosenGif = R.drawable.vacuum
-                    10 -> choosenGif = R.drawable.water
-                    11 -> choosenGif = R.drawable.waterfall
-                    12 -> choosenGif = R.drawable.waves
-                    13 -> choosenGif = R.drawable.white_noise
-                }
-                Glide.with(this)
-                    .load(choosenGif)
-                    .into(playingMusicImg)
-
-
+                initialiserGif(donnesVM.isSwitch1On, playingMusicImg)
+//                var choosenGif: Int? = null
+//
+//                if (isSwitch1On) {
+//
+//                    when (donnesVM.selectedImageposition) {
+//                        0 -> choosenGif = R.drawable.campfire
+//                        1 -> choosenGif = R.drawable.dryer
+//                        2 -> choosenGif = R.drawable.fan
+//                        3 -> choosenGif = R.drawable.ocean
+//                        4 -> choosenGif = R.drawable.rain
+//                        5 -> choosenGif = R.drawable.refrigerator
+//                        6 -> choosenGif = R.drawable.shhhh
+//                        7 -> choosenGif = R.drawable.shower
+//                        8 -> choosenGif = R.drawable.stream
+//                        9 -> choosenGif = R.drawable.vacuum
+//                        10 -> choosenGif = R.drawable.water
+//                        11 -> choosenGif = R.drawable.waterfall
+//                        12 -> choosenGif = R.drawable.waves
+//                        13 -> choosenGif = R.drawable.white_noise
+//                    }
+//                    Glide.with(this)
+//                        .load(choosenGif)
+//                        .into(playingMusicImg)
+//
+//                }else{
+//                    playingMusicImg.setImageResource(soundItems[donnesVM.selectedImageposition!!].imageResId)
+//                }
             }
         }
 
@@ -324,12 +361,18 @@ class MainActivity : AppCompatActivity() {
                 donnesVM.choosedGrid = 2
                 (addedGridView.adapter as AddedSoundAdapter).setSelectedItem(donnesVM.selectedImageposition!!)
 
+                initialiserGif(donnesVM.isSwitch1On, playingMusicImg)
 
-                //AJOUT DU GIF
-                Glide.with(this)
-                    .load(R.drawable.music_notes)
-                    .into(playingMusicImg)
-
+//                if (donnesVM.isSwitch1On == true) {
+//                    //AJOUT DU GIF
+//                    Glide.with(this)
+//                        .load(R.drawable.music_notes)
+//                        .into(playingMusicImg)
+//                }
+//                else {
+//                    playingMusicImg.setImageResource(R.mipmap.music_notes)
+//
+//                }
             }
         }
         if (donnesVM.selectedImageposition != null) {
@@ -943,7 +986,7 @@ class MainActivity : AppCompatActivity() {
                 val soundName = soundFile.nameWithoutExtension
 
                 // Get the creation date of the file
-// Get the creation date of the file
+                // Get the creation date of the file
                 val creationDate = SimpleDateFormat(
                     "dd/MM/yyyy",
                     Locale.getDefault()
@@ -964,6 +1007,46 @@ class MainActivity : AppCompatActivity() {
 
         // Notify the adapter that the data set has changed
         addedAdapter.notifyDataSetChanged()
+    }
+
+
+    private fun initialiserGif(isSwitch1On: Boolean, playingMusicImg: ImageView) {
+        if (donnesVM.choosedGrid == 1) {
+            var choosenGif: Int? = null
+            if (isSwitch1On == true) {
+                when (donnesVM.selectedImageposition) {
+                    0 -> choosenGif = R.drawable.campfire
+                    1 -> choosenGif = R.drawable.dryer
+                    2 -> choosenGif = R.drawable.fan
+                    3 -> choosenGif = R.drawable.ocean
+                    4 -> choosenGif = R.drawable.rain
+                    5 -> choosenGif = R.drawable.refrigerator
+                    6 -> choosenGif = R.drawable.shhhh
+                    7 -> choosenGif = R.drawable.shower
+                    8 -> choosenGif = R.drawable.stream
+                    9 -> choosenGif = R.drawable.vacuum
+                    10 -> choosenGif = R.drawable.water
+                    11 -> choosenGif = R.drawable.waterfall
+                    12 -> choosenGif = R.drawable.waves
+                    13 -> choosenGif = R.drawable.white_noise
+                }
+
+                Glide.with(this)
+                    .load(choosenGif)
+                    .into(playingMusicImg)
+            } else {
+                donnesVM.isSwitch1On = false
+                playingMusicImg.setImageResource(soundItems[donnesVM.selectedImageposition!!].imageResId)
+            }
+        } else {
+            if (isSwitch1On == true) {
+                Glide.with(this)
+                    .load(R.drawable.music_notes)
+                    .into(playingMusicImg)
+            } else {
+                playingMusicImg.setImageResource(R.mipmap.music_notes_foreground)
+            }
+        }
     }
 
     private fun displayAboutDialog() {

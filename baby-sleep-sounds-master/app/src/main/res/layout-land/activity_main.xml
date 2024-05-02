@@ -119,17 +119,15 @@
 
     <Switch
         android:id="@+id/switch1"
-        android:layout_width="73dp"
+        android:layout_width="wrap_content"
         android:layout_height="23dp"
-        android:checked="true"
         android:text="Gif"
         android:textOff="OFF"
         app:layout_constraintBottom_toBottomOf="@+id/sleepTimerSpinner"
         app:layout_constraintEnd_toStartOf="@+id/gridView"
         app:layout_constraintStart_toEndOf="@+id/sleepTimerSpinner"
         app:layout_constraintTop_toTopOf="@+id/sleepTimerSpinner"
-        app:layout_constraintVertical_bias="1.0"
-        tools:checked="true" />
+        app:layout_constraintVertical_bias="1.0" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

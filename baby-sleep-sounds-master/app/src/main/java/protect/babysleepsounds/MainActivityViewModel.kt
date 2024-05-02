@@ -14,4 +14,5 @@ class MainActivityViewModel : ViewModel() {
     var recordingElapsedTime : Long = 0
     var isGridViewClickable: Boolean = true
     var choosedGrid: Int = 0
+    var isSwitch1On: Boolean = true
 }
