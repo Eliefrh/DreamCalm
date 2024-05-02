@@ -76,9 +76,6 @@ class AudioService : Service() {
 
                 }
             }
-
-            else -> {
-            }
         }
     }
 
