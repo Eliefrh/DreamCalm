@@ -158,10 +158,12 @@ class MainActivity : AppCompatActivity() {
         startService(startIntentMedia)
         scanSoundFolder()
 
-//        donnesVM.choosedGrid = 1
+        //Highlight le sons du feu par defaut
         if (donnesVM.selectedImageposition == null && donnesVM.choosedGrid == 0) {
             (gridviewSound.adapter as SoundAdapter).setSelectedItem(0)
-        } else
+        }
+        //Highlight le son selectionné si la selection est sauvegardée
+        else
             if (donnesVM.selectedImageposition != null) {
                 if (donnesVM.choosedGrid == 1) {
                     (gridviewSound.adapter as SoundAdapter).setSelectedItem(donnesVM.selectedImageposition!!)
@@ -209,11 +211,8 @@ class MainActivity : AppCompatActivity() {
         //Switch pour turn on/off les Gifs
         val switch1 = findViewById<Switch>(R.id.switch1)
         switch1.isChecked = donnesVM.isSwitch1On
-//        donnesVM.isSwitch1On = switch1.isChecked
-//        switch1.isChecked = donnesVM.isSwitch1On
 
         switch1.setOnCheckedChangeListener { _, isChecked ->
-//            donnesVM.isSwitch1On = isChecked
 
             if (isChecked == true) {
                 switch1.text = "Gif"
