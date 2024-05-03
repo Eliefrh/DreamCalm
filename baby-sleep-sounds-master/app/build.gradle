@@ -3,9 +3,8 @@ plugins {
     id "com.github.spotbugs" version "4.5.1"
     id "com.android.application"
     id 'org.jetbrains.kotlin.android'
-
+    id "org.jetbrains.dokka" version "1.9.20"
 }
-
 android {
     compileSdkVersion 34
     defaultConfig {
@@ -106,4 +105,15 @@ project.tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
         xml.enabled = false
         html.enabled = true
     }
+}
+dokkaHtml {
+    documentedVisibilities.set(
+            setOf(
+                    Visibility.PUBLIC,
+                    Visibility.PRIVATE,
+                    Visibility.PROTECTED,
+                    Visibility.INTERNAL,
+                    Visibility.PACKAGE // for java
+            )
+    )
 }

@@ -11,8 +11,17 @@ import android.os.CountDownTimer
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 
+/**
+ * A service that manages a countdown timer. The timer is controlled by intents sent to the service.
+ * The remaining time is displayed in a persistent notification and broadcasted for other components.
+ *
+ * @property notificationManager The system service that manages notifications.
+ * @property countDownTimer The countdown timer instance.
+ * @property notificationBuilder The builder for creating notifications.
+ */
 class TimerService : Service() {
     private lateinit var notificationManager: NotificationManager
+    // Countdown timer instance
     private var countDownTimer: CountDownTimer? = null
     private lateinit var notificationBuilder: NotificationCompat.Builder
 
@@ -23,6 +32,7 @@ class TimerService : Service() {
 
     }
     private fun createNotificationChannel() {
+        // Create notification channel for Android O and above
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channelId = "timer_channel"
             val channelName = "Timer Channel"
@@ -36,10 +46,12 @@ class TimerService : Service() {
         }
     }
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-
+        // Check if intent has countdown duration
         if (intent != null && intent.hasExtra("countdownDuration")) {
-                startTimer(intent.getIntExtra("countdownDuration", 0))
+            // Start timer with countdown duration
+            startTimer(intent.getIntExtra("countdownDuration", 0))
             }else{
+            // if intent has a timer but no countdown duration, stop the timer, and if hte timer is disabled, on the notification show that the timer is disabled
             if (intent != null) {
                 stopTimer(intent.getBooleanExtra("timerchanged", false))
                 if(intent.hasExtra("timerDisabled")){
@@ -60,14 +72,25 @@ class TimerService : Service() {
         stopTimer()
     }
 
+    /**
+     * Starts the countdown timer and updates the notification and broadcasts the remaining time at each tick.
+     *
+     * @param countdownDuration The duration of the countdown in milliseconds.
+     */
     private fun startTimer(countdownDuration: Int) {
+        // Initialize countdown timer
         countDownTimer = object : CountDownTimer(countdownDuration.toLong(), 1000) {
+            // Called at every tick of the timer
             override fun onTick(millisUntilFinished: Long) {
+                // Calculate hours, minutes, and seconds
                 val hours = (millisUntilFinished / (1000 * 60 * 60)) % 24
                 val minutes = (millisUntilFinished / (1000 * 60)) % 60
                 val seconds = (millisUntilFinished / 1000) % 60
+                // Format time left
                 val timeLeftFormatted = String.format("%02d:%02d:%02d", hours, minutes, seconds)
+                // Update notification with time left
                 updateNotification(timeLeftFormatted)
+                // Send broadcast with time left
                 sendTimerUpdateBroadcast(timeLeftFormatted)
             }
 
@@ -81,22 +104,36 @@ class TimerService : Service() {
         // Start service in foreground to avoid being killed by the system
         startForeground(1, createNotification())
     }
+    /**
+     * Sends a broadcast with the updated remaining time.
+     *
+     * @param timeLeftFormatted The remaining time formatted as a string.
+     */
     private fun sendTimerUpdateBroadcast(timeLeftFormatted: String) {
         val intent = Intent("TIMER_UPDATE")
         intent.putExtra("timeLeftFormatted", timeLeftFormatted)
         sendBroadcast(intent)
     }
+    /**
+     * Sends a broadcast when the timer finishes.
+     */
     private fun sendTimerFinishBroadcast() {
         val intent = Intent("TIMER_FINISH")
         sendBroadcast(intent)
     }
 
-
+    /**
+     * Stops the timer and cancels the foreground service.
+     *
+     * @param timerChanged A flag indicating whether the timer was changed.
+     */
     private fun stopTimer(timerChanged : Boolean = false) {
+        // Check if timer was changed, it gets canceled
         if(timerChanged){
             countDownTimer?.cancel()
         }else{
-        countDownTimer?.onFinish()
+            // Finish the timer and send a broadcast that the timer has finished
+            countDownTimer?.onFinish()
         if(countDownTimer != null){
             stopForeground(true)
         stopSelf()
@@ -137,7 +174,11 @@ class TimerService : Service() {
 
         return notificationBuilder.build()
     }
-
+    /**
+     * Updates the notification with the given time.
+     *
+     * @param timeLeftFormatted The remaining time formatted as a string.
+     */
     private fun updateNotification(timeLeftFormatted : String) {
         notificationBuilder.setContentText(timeLeftFormatted)
 
