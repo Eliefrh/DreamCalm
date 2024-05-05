@@ -3,7 +3,7 @@ plugins {
     id "com.github.spotbugs" version "4.5.1"
     id "com.android.application"
     id 'org.jetbrains.kotlin.android'
-    id "org.jetbrains.dokka" version "1.9.20"
+    id "org.jetbrains.dokka" version "1.6.10"
 }
 android {
     compileSdkVersion 34
@@ -49,6 +49,7 @@ repositories {
 }
 
 dependencies {
+
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.preference:preference-ktx:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
@@ -88,6 +89,15 @@ dependencies {
 
 
 }
+dokkaHtml.configure {
+    dokkaSourceSets {
+        named("main") {
+            includeNonPublic.set(true)
+        }
+    }
+}
+
+
 
 spotbugs {
     effort = 'max'
@@ -106,14 +116,4 @@ project.tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
         html.enabled = true
     }
 }
-dokkaHtml {
-    documentedVisibilities.set(
-            setOf(
-                    Visibility.PUBLIC,
-                    Visibility.PRIVATE,
-                    Visibility.PROTECTED,
-                    Visibility.INTERNAL,
-                    Visibility.PACKAGE // for java
-            )
-    )
-}
+
