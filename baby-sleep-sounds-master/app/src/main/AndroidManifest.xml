@@ -17,7 +17,7 @@
     <application
         android:allowBackup="false"
         android:icon="@mipmap/music_notes"
-        android:label="@string/app_name"
+        android:label="Dream Calm"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:extractNativeLibs = "true">
@@ -47,7 +47,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
+            android:label="Dream Calm"
             android:launchMode="singleTask"
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustPan">
