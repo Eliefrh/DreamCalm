@@ -52,10 +52,10 @@
     <string name="theme_light">Clair</string>
     <string name="theme">Thème</string>
     <string name="about">À propos</string>
-    <string name="app_copyright_fmt">Droit d\'auteur 2024-<xliff:g>%d</xliff:g> Narges et Elie</string>
+    <string name="app_copyright_fmt">Droit d\'auteur 2023-<xliff:g>%d</xliff:g> Narges et Elie</string>
     <string name="app_license">Licencié sous GPLv3.</string>
     <string name="about_title_fmt">À propos <xliff:g id="app_name">%s</xliff:g></string>
-    <string name="debug_version_fmt">Version: <xliff:g id="version">%s</xliff:g></string>
+    <string name="debug_version_fmt">Version: 1.0.0 </string>
     <string name="about_description">Dream Calm est un compagnon doux pour les bébés, offrant une sélection soignée de sons et d\'images apaisants pour aider au sommeil paisible. Inspirée par "Baby Sleep Sounds" de Branden Archer, notre application vise à créer un environnement apaisant propice à la relaxation et à la tranquillité pour votre petit.</string>
     <string name="app_revision_fmt">Informations de révision: <xliff:g id="app_revision_url">%s</xliff:g></string>
     <string name="sound_resources"><xliff:g id="app_name">%s</xliff:g> utilise des ressources sonores de: <xliff:g id="sound_sources_list">%s</xliff:g></string>
