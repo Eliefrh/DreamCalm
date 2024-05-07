@@ -17,11 +17,26 @@ import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import java.io.File
-
+/**
+ * A service that handles audio playback.
+ */
 class AudioService : Service() {
+    /**
+     * A service that handles audio playback.
+     */
     private var _mediaPlayer: LoopingAudioPlayer? = null
+
+    /**
+     * The ExoPlayer used for audio playback.
+     */
     public lateinit var exoPlayer: SimpleExoPlayer
+    /**
+     * The filename of the audio file to be played.
+     */
     var audioFilename: String? = null
+    /**
+     * The AudioFocusRequest used for requesting audio focus.
+     */
     private var focusRequest: AudioFocusRequest? = null
 
     override fun onBind(intent: Intent): IBinder? {
@@ -29,6 +44,10 @@ class AudioService : Service() {
         return null
     }
 
+    /**
+     * Called when the service is created.
+     * Initializes the ExoPlayer and sets it to repeat mode.
+     */
     override fun onCreate() {
         super.onCreate()
         exoPlayer = SimpleExoPlayer.Builder(this).build()
@@ -38,7 +57,12 @@ class AudioService : Service() {
     private val audioManager: AudioManager by lazy {
         getSystemService(Context.AUDIO_SERVICE) as AudioManager
     }
-
+    /**
+     * Handles changes in audio focus.
+     *
+     * When the service loses audio focus, it stops playback.
+     * When the service gains audio focus, it resumes playback.
+     */
     private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
         when (focusChange) {
             AudioManager.AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
@@ -78,7 +102,12 @@ class AudioService : Service() {
             }
         }
     }
-
+    /**
+     * Called when the service is started.
+     *
+     * It requests audio focus and starts audio playback if the focus is granted.
+     * If the service loses audio focus, it stops playback and releases resources.
+     */
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         audioFilename = intent.getStringExtra(AUDIO_FILENAME_ARG)
@@ -156,6 +185,11 @@ class AudioService : Service() {
         return START_NOT_STICKY
     }
 
+    /**
+     * Called when the service is destroyed.
+     *
+     * It stops audio playback, releases the ExoPlayer and abandons audio focus.
+     */
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onDestroy() {
 
@@ -173,11 +207,27 @@ class AudioService : Service() {
         }
         super.onDestroy()
     }
-
+    /**
+     * Companion object that contains constants used in this service.
+     */
     companion object {
+        /**
+         * Tag used for logging.
+         */
         private const val TAG = "BabySleepSounds"
+
+        /**
+         * Key for the audio filename argument passed in the intent.
+         */
         const val AUDIO_FILENAME_ARG = "AUDIO_FILENAME_ARG"
+
+        /**
+         * Action for playing audio.
+         */
         const val ACTION_PLAY = "protect.babysleepsounds.action.PLAY"
+        /**
+         * Action for pausing audio.
+         */
         const val ACTION_PAUSE = "protect.babysleepsounds.action.PAUSE"
     }
 }
