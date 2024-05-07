@@ -276,6 +276,27 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        addedText.setOnClickListener {
+            if (addedGridView.visibility == View.VISIBLE) {
+                addedGridView.visibility = View.GONE
+                if (parentView != null) {
+
+                    val params = gridviewSound.layoutParams
+                    params.height =
+                        (parentView.height * 0.75).toInt() // 80% of the parent view's height
+                    gridviewSound.layoutParams = params
+                }
+            } else {
+                addedGridView.visibility = View.VISIBLE
+                if (parentView != null) {
+                    val params = gridviewSound.layoutParams
+                    params.height =
+                        (parentView.height * 0.3).toInt() // 80% of the parent view's height
+                    gridviewSound.layoutParams = params
+                }
+            }
+        }
+
 
         playingMusicImg.setImageResource(R.mipmap.campfire_foreground)
 
