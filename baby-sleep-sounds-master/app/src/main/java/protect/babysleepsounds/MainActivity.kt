@@ -1125,7 +1125,7 @@ class MainActivity : AppCompatActivity() {
         }
         val wv = WebView(this)
         val html =
-            "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" />" + "<img src=\"file:///android_res/mipmap/ic_launcher.png\" alt=\"" + appName + "\"/>" + "<h1>" + String.format(
+            "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" />" + "<img src=\"file:///android_res/mipmap/music_notes\" alt=\"" + appName + "\"/>" + "<h1>" + String.format(
                 getString(R.string.about_title_fmt),
                 "<a href=\"" + getString(R.string.app_webpage_url)
             ) + "\">" + appName + "</a>" + "</h1><p>" + appName + " " + String.format(
@@ -1137,7 +1137,10 @@ class MainActivity : AppCompatActivity() {
             ) + "</p><hr/><p>" + String.format(
                 getString(R.string.app_copyright_fmt),
                 year
-            ) + "</p><hr/><p>" + getString(R.string.app_license) + "</p><hr/><p>" + String.format(
+            ) + "</p><hr/><p>" + String.format(
+        getString(R.string.about_description),
+        year
+        ) +  "</p><hr/><p>" + getString(R.string.app_license) + "</p><hr/><p>" + String.format(
                 getString(R.string.sound_resources), appName, soundResources.toString()
             ) + "</p><hr/><p>" + String.format(
                 getString(R.string.image_resources), appName, imageResources.toString()
