@@ -1,4 +1,4 @@
-[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/Eliefrh/DreamCalm/edit/main/README.md)
+[![fr](https://img.shields.io/badge/lang-fr-green.svg)](https://github.com/Eliefrh/DreamCalm/edit/main/README.fr.md)
 <!-- LOGO DU PROJET -->
 <br />
 <div align="center">
