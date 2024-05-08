@@ -30,8 +30,12 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/**
+ * This is the RecordingUploadingActivity class that extends AppCompatActivity.
+ * It is responsible for recording and uploading audio files.
+ */
 class RecordingUploadingActivity : AppCompatActivity() {
-
+    // Variables for managing recording functionality
     private var isRecording = false
     private var mediaRecorder: MediaRecorder? = null
     private var outputFile: File? = null
@@ -46,6 +50,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
     private lateinit var playText: TextView
     private var mediaPlayer: MediaPlayer? = null
 
+    // ViewModel instance for managing data
     val donnesVM: MainActivityViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,6 +78,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
                 123
             )
         }
+        // Initialize UI elements
         isRecordingText = findViewById(R.id.isRecordingText)
         chronometer = findViewById(R.id.chronometer)
         buttonRecording = findViewById(R.id.recordingButton)
@@ -102,6 +108,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
             buttonPlaySound.isEnabled = true
             buttonSavingFile.isEnabled = true
         }
+        // Set listeners for buttons
         buttonRecording.setOnClickListener {
 
             if (!isRecording) {
@@ -176,6 +183,9 @@ class RecordingUploadingActivity : AppCompatActivity() {
             selectAudioFile()
         }
     }
+    /**
+     * This is the showSaveDialog function that shows a dialog to save the recording.
+     */
     private fun showSaveDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_save_name, null)
         val editTextName = dialogView.findViewById<EditText>(R.id.editTextName)
@@ -188,6 +198,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
 
         val alertDialog = alertDialogBuilder.create()
         alertDialog.setOnShowListener {
+            // Set button colors based on theme
             val saveButtonColor = if (Preferences[this]?.theme == Preferences.THEME_LIGHT) {
                 ContextCompat.getColor(this, R.color.menuItemTextColorLight) //  color for light theme
             } else {
@@ -214,7 +225,9 @@ class RecordingUploadingActivity : AppCompatActivity() {
         }
         alertDialog.show()
     }
-
+    /**
+     * This is the startRecording function that starts the audio recording.
+     */
     private fun startRecording() {
         isRecordingText.visibility = TextView.VISIBLE
         isRecordingText.text = getString(R.string.isRecordingText)
@@ -246,7 +259,9 @@ class RecordingUploadingActivity : AppCompatActivity() {
 
         isRecording = true
     }
-
+    /**
+     * This is the stopRecording function that stops the audio recording.
+     */
     private fun stopRecording() {
         isRecordingText.text = getString(R.string.recorded)
         buttonSavingFile.isEnabled =  true
@@ -265,7 +280,10 @@ class RecordingUploadingActivity : AppCompatActivity() {
         donnesVM.recordingElapsedTime = chronometer.base - SystemClock.elapsedRealtime()
         selectedAudioUri = outputFile?.toUri()
     }
-
+    /**
+     * This is the saveRecording function that saves the recording with a given name.
+     * @param name This is the first parameter to saveRecording method which is the name of the recording.
+     */
     private fun saveRecording(name: String) {
         // Your existing saveRecording logic
         val destinationDir =
@@ -289,7 +307,10 @@ class RecordingUploadingActivity : AppCompatActivity() {
     }
 
 
-
+    /**
+     * This is the getOutputMediaFile function that gets the output media file for the recording.
+     * @return File This returns the output media file.
+     */
     private fun getOutputMediaFile(): File {
         val mediaStorageDir = File(getExternalFilesDir(Environment.DIRECTORY_MUSIC), "MyRecordings")
         if (!mediaStorageDir.exists()) {
@@ -298,14 +319,22 @@ class RecordingUploadingActivity : AppCompatActivity() {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         return File(mediaStorageDir.path + File.separator + "REC_$timeStamp.3gp")
     }
-
+    /**
+     * This is the selectAudioFile function that selects an audio file from the device.
+     */
     private fun selectAudioFile() {
         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
             type = "audio/*"
         }
         startActivityForResult(intent, 123)
     }
-
+    /**
+     * This is the onActivityResult function that is called when an activity you launched exits.
+     * It sets the selected audio URI and enables the play and save buttons.
+     * @param requestCode This is the first parameter to onActivityResult method which is the integer request code originally supplied to startActivityForResult(), allowing you to identify who this result came from.
+     * @param resultCode This is the second parameter to onActivityResult method which is the integer result code returned by the child activity through its setResult().
+     * @param data This is the third parameter to onActivityResult method which is an Intent, which can return result data to the caller (various data can be attached to Intent "extras").
+     */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 123 && resultCode == RESULT_OK) {
@@ -317,14 +346,20 @@ class RecordingUploadingActivity : AppCompatActivity() {
 
         }
     }
-
+    /**
+     * This is the onSaveInstanceState function that is called to retrieve per-instance state from an activity before being killed so that the state can be restored in onCreate(Bundle) or onRestoreInstanceState(Bundle) (the Bundle populated by this method will be passed to both).
+     * @param outState This is the first parameter to onSaveInstanceState method which is the Bundle in which to place your saved state.
+     */
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         if (isRecording) {
             stopRecording()
         }
     }
-
+    /**
+     * This is the onDestroy function that is called by the system to notify a Service that it is no longer used and is being removed.
+     * It stops and releases the media player if it is playing.
+     */
     override fun onDestroy() {
         super.onDestroy()
         if (mediaPlayer != null && mediaPlayer!!.isPlaying) {
