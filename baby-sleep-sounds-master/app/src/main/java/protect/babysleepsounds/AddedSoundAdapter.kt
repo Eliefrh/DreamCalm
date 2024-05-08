@@ -71,7 +71,7 @@ class AddedSoundAdapter(
         // Set the extracted name in the TextView
         nameTextView.text = name
         dateTextView.text = soundItems[position].creationDate
-        
+
         // Set background color based on selection state
         if (position == selectedItemPosition) {
             itemView.setBackgroundResource(R.color.colorPrimary)
