@@ -1,3 +1,4 @@
+[![fr](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/Eliefrh/DreamCalm/edit/main/README.fr.md)
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
@@ -167,7 +168,7 @@ and are distributed under the condition of "Personal Use":
   - waterfall.mp3
   - waves.mp3
 
-[Campfire-1.mp3](https://www.soundjay.com/nature/campfire-1.mp3) Copyright SoundJay.com Used with Permission.
+[Campfire-1.mp3](https://www.soundjay.com/nature/campfire-1.mp3) Copyright SoundJay.com, used with Permission.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
