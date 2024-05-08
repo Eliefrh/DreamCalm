@@ -52,8 +52,22 @@ import java.util.Date
 import java.util.LinkedList
 import java.util.Locale
 
-
+/**
+ * Data class representing a sound item with an image resource ID.
+ *
+ * @property imageResId The resource ID of the image representing the sound.
+ */
 data class SoundItem(val imageResId: Int)
+
+
+/**
+ * Data class representing an added sound item with an image resource ID, path, name, and creation date.
+ *
+ * @property imageResId The resource ID of the image representing the sound.
+ * @property path The path of the sound file.
+ * @property name The name of the sound.
+ * @property creationDate The creation date of the sound.
+ */
 data class AddedSoundItem(
     val imageResId: Int,
     val path: String,
@@ -61,38 +75,72 @@ data class AddedSoundItem(
     val creationDate: String
 )
 
+/**
+ * Main activity class for the application.
+ */
 class MainActivity : AppCompatActivity() {
+    /**
+     * ViewModel for the main activity.
+     */
     val donnesVM: MainActivityViewModel by viewModels()
+    /**
+     * Map of sound resources.
+     */
     private var _soundMap: Map<Int, Int>? = null
-
-    //    private var _addedSoundMap: Map<Int, String>? = null
+    /**
+     * Map of time resources.
+     */
     private var _timeMap: Map<String, Int>? = null
+    /**
+     * FFmpeg instance for audio processing.
+     */
     private var _ffmpeg: FFmpeg? = null
+    /**
+     * Progress dialog for encoding.
+     */
     private var _encodingProgress: ProgressDialog? = null
+    /**
+     * Bluetooth adapter for the device.
+     */
     private var bluetoothAdapter: BluetoothAdapter? = null
+    /**
+     * List of sound items.
+     */
     lateinit var soundItems: List<SoundItem>
+    /**
+     * Play button.
+     */
     lateinit var buttonPlay: Button
+    /**
+     * Grid view for sound items.
+     */
     lateinit var gridviewSound: GridView
+    /**
+     * Grid view for added sound items.
+     */
     lateinit var addedGridView: GridView
+    /**
+     * List of added sound items.
+     */
     private var addedSoundItem: MutableList<AddedSoundItem> = mutableListOf()
+    /**
+     * Flag indicating whether the selection was made by the user.
+     */
     private var isUserSelection = false
 
-    //    private lateinit var mediaSession: MediaSession
-    var countdownDuration = 60 * 1000L
-    var timeLeftInMillis: Long = 0
     lateinit var sleepTimeoutSpinner: Spinner
 
     private var mediaPlayer: MediaPlayer? = null
 
 
-    val sourcePath = "/baby-sleep-sounds-master/app/src/main/res/raw"
-    val destinationPath = "/storage/emulated/0/Android/data/protect.babysleepsounds/files"
+
 
     // Déclaration de constantes pour les permissions
     private val REQUEST_PERMISSION_CODE = 123
-    private val PERMISSIONS_REQUIRED = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
-
+    /**
+     * Broadcast receiver for stopping the sound which is playing and replaying it (this broadcast is used when the lowpas frequency of the sound changes and apply is clicked)
+     */
     private val stopMusicReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (donnesVM.isPlaying) {
@@ -108,7 +156,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
+    /**
+     * Broadcast receiver for stopping or staring a sound.
+     */
     private val stopStartMusicReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (donnesVM.selectedImageposition != null) {
@@ -128,7 +178,9 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
-
+    /**
+     * Broadcast receiver for updating the timer.
+     */
     private val timerUpdateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val selectedView = sleepTimeoutSpinner.selectedView as? TextView
@@ -137,6 +189,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+    /**
+     * Broadcast receiver for finishing the timer.
+     */
     private val timerFinishReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val selectedView = sleepTimeoutSpinner.selectedView as? TextView
@@ -145,6 +200,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Called when the activity is starting.
+     */
     override fun onStart() {
         val intentFilter = IntentFilter("STOP_MUSIC_ACTION")
         registerReceiver(stopMusicReceiver, intentFilter)
@@ -190,12 +248,16 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Apply theme based on user preference
         Preferences[this]!!.applyTheme()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        // Set up toolbar
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
+        // Check and request necessary permissions
         checkPermissions()
+        // Initialize views
         sleepTimeoutSpinner = findViewById(R.id.sleepTimerSpinner)
         buttonPlay = findViewById(R.id.button)
         buttonPlay.isEnabled = true
@@ -208,7 +270,7 @@ class MainActivity : AppCompatActivity() {
         var playingMusicImg = findViewById<ImageView>(R.id.playingSound)
 
 
-        //Switch pour turn on/off les Gifs
+        // Initialize and handle switch for GIF mode
         val switch1 = findViewById<Switch>(R.id.switch1)
         switch1.isChecked = donnesVM.isSwitch1On
 
@@ -226,20 +288,19 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-//        initialiserGif(donnesVM.isSwitch1On, playingMusicImg)
-
 
         // Initialize BluetoothAdapter
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         if (bluetoothAdapter == null) {
-            // Device doesn't support Bluetooth
+            // Show toast if Bluetooth is not supported
             Toast.makeText(this, R.string.bluetoothnot, Toast.LENGTH_SHORT)
                 .show()
         }
-
+        // Initialize the app and scan sound folder
         initializeApp()
         scanSoundFolder()
 
+        // Set up grid view for built-in sounds
         gridviewSound = findViewById(R.id.gridView)
         soundItems = _soundMap?.keys?.map { SoundItem(it) } ?: emptyList()
         val adapter = SoundAdapter(this, soundItems)
@@ -247,12 +308,13 @@ class MainActivity : AppCompatActivity() {
 
         val addedText: TextView = findViewById(R.id.recentlyadded)
 
-
+        // Set up grid view for user-added sounds
         addedGridView = findViewById<GridView>(R.id.gridView_ajoute)
         val parentView = findViewById<View>(R.id.visibil)
         val addedAdapter = AddedSoundAdapter(this, addedSoundItem)
         addedGridView.adapter = addedAdapter
         addedGridView.visibility = View.GONE
+        // Handle click on playingMusicImg to toggle visibility of addedGridView
         val addedFlesh: ImageView = findViewById(R.id.fleshImg)
 
         addedFlesh.setOnClickListener {
@@ -276,6 +338,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Handle click on recently added text to toggle visibility of addedGridView
         addedText.setOnClickListener {
             if (addedGridView.visibility == View.VISIBLE) {
                 addedGridView.visibility = View.GONE
@@ -297,42 +360,15 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-
+        // Set initial image for playingMusicImg
         playingMusicImg.setImageResource(R.mipmap.campfire_foreground)
 
-//        if (donnesVM.choosedGrid == 1) {
-//            var choosenGif: Int? = null
-//            if (isSwitch1On) {
-//                when (donnesVM.selectedImageposition) {
-//                    0 -> choosenGif = R.drawable.campfire
-//                    1 -> choosenGif = R.drawable.dryer
-//                    2 -> choosenGif = R.drawable.fan
-//                    3 -> choosenGif = R.drawable.ocean
-//                    4 -> choosenGif = R.drawable.rain
-//                    5 -> choosenGif = R.drawable.refrigerator
-//                    6 -> choosenGif = R.drawable.shhhh
-//                    7 -> choosenGif = R.drawable.shower
-//                    8 -> choosenGif = R.drawable.stream
-//                    9 -> choosenGif = R.drawable.vacuum
-//                    10 -> choosenGif = R.drawable.water
-//                    11 -> choosenGif = R.drawable.waterfall
-//                    12 -> choosenGif = R.drawable.waves
-//                    13 -> choosenGif = R.drawable.white_noise
-//                }
-//
-//                Glide.with(this)
-//                    .load(choosenGif)
-//                    .into(playingMusicImg)
-//            }else{
-//                playingMusicImg.setImageResource(soundItems[donnesVM.selectedImageposition!!].imageResId)
-//            }
-//        }
 
-
+        // Set click listeners for grid view items
         gridviewSound.setOnItemClickListener { parent, view, position, id ->
             if (donnesVM.isGridViewClickable) {
 
-                //Remove the highlight from the other item
+                // Highlight the selected item and update ViewModel
                 (addedGridView.adapter as AddedSoundAdapter).setSelectedItem(-1)
 
 
@@ -346,40 +382,15 @@ class MainActivity : AppCompatActivity() {
                 (gridviewSound.adapter as SoundAdapter).setSelectedItem(donnesVM.selectedImageposition!!)
 
                 initialiserGif(donnesVM.isSwitch1On, playingMusicImg)
-//                var choosenGif: Int? = null
-//
-//                if (isSwitch1On) {
-//
-//                    when (donnesVM.selectedImageposition) {
-//                        0 -> choosenGif = R.drawable.campfire
-//                        1 -> choosenGif = R.drawable.dryer
-//                        2 -> choosenGif = R.drawable.fan
-//                        3 -> choosenGif = R.drawable.ocean
-//                        4 -> choosenGif = R.drawable.rain
-//                        5 -> choosenGif = R.drawable.refrigerator
-//                        6 -> choosenGif = R.drawable.shhhh
-//                        7 -> choosenGif = R.drawable.shower
-//                        8 -> choosenGif = R.drawable.stream
-//                        9 -> choosenGif = R.drawable.vacuum
-//                        10 -> choosenGif = R.drawable.water
-//                        11 -> choosenGif = R.drawable.waterfall
-//                        12 -> choosenGif = R.drawable.waves
-//                        13 -> choosenGif = R.drawable.white_noise
-//                    }
-//                    Glide.with(this)
-//                        .load(choosenGif)
-//                        .into(playingMusicImg)
-//
-//                }else{
-//                    playingMusicImg.setImageResource(soundItems[donnesVM.selectedImageposition!!].imageResId)
-//                }
+
             }
         }
+
 
         addedGridView.setOnItemClickListener { parent, view, position, id ->
             if (donnesVM.isGridViewClickable) {
 
-                //Remove the highlight from the other item
+                // Highlight the selected item and update ViewModel
                 (gridviewSound.adapter as SoundAdapter).setSelectedItem(-1)
 
                 buttonPlay.isEnabled = true
@@ -391,16 +402,7 @@ class MainActivity : AppCompatActivity() {
 
                 initialiserGif(donnesVM.isSwitch1On, playingMusicImg)
 
-//                if (donnesVM.isSwitch1On == true) {
-//                    //AJOUT DU GIF
-//                    Glide.with(this)
-//                        .load(R.drawable.music_notes)
-//                        .into(playingMusicImg)
-//                }
-//                else {
-//                    playingMusicImg.setImageResource(R.mipmap.music_notes)
-//
-//                }
+
             }
         }
         if (donnesVM.selectedImageposition != null) {
@@ -415,11 +417,11 @@ class MainActivity : AppCompatActivity() {
 
             }
         }
-        //Press and hold to delete the selected sound
+        // Handle long click on addedGridView items to delete sounds
         addedGridView.onItemLongClickListener =
             AdapterView.OnItemLongClickListener { parent, view, position, id ->
                 val path: String = addedSoundItem[position].path
-
+                // Show confirmation dialog for deletion
                 val alertDialogBuilder = AlertDialog.Builder(this@MainActivity)
                 alertDialogBuilder.setTitle(getString(R.string.confirm_action))
                 alertDialogBuilder.setMessage(getString(R.string.choose_action))
@@ -467,7 +469,7 @@ class MainActivity : AppCompatActivity() {
                                         file.delete()
                                     }
 
-                                    //effacer du gridView
+                                    // Remove from gridView and stop playback
                                     addedSoundItem.removeAt(position)
                                     scanSoundFolder()
 
@@ -475,7 +477,6 @@ class MainActivity : AppCompatActivity() {
                                     donnesVM.selectedImageposition = null
                                     donnesVM.itemSelected = false
                                     playingMusicImg?.setImageResource(0)
-//                        playingMusicImg = null
                                     buttonPlay.isEnabled = false
                                     stopPlayback()
 
@@ -522,7 +523,6 @@ class MainActivity : AppCompatActivity() {
                                 donnesVM.selectedImageposition = position
                                 donnesVM.choosedGrid = 2
                                 addedGridView.setSelection(position)
-                                Log.d("Elie", "position: $position")
                                 playingMusicImg.setImageResource(R.mipmap.music_notes_foreground)
                             })
                         renameDialog.setNegativeButton(getString(R.string.cancel), null)
@@ -571,8 +571,6 @@ class MainActivity : AppCompatActivity() {
 
 
         buttonPlay.setOnClickListener {
-//            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
-//        if()
             if (donnesVM.selectedImageposition != null) {
                 if (!donnesVM.isPlaying) {
                     if (donnesVM.choosedGrid == 1) {
@@ -593,7 +591,6 @@ class MainActivity : AppCompatActivity() {
         File(getExternalFilesDir(null), "files/ffmpeg").setExecutable(true)
 
         if (_ffmpeg is FFmpeg && _ffmpeg!!.isSupported()) {
-            //button.isEnabled = true
         } else {
             Log.d(TAG, "ffmpeg not supported")
             reportPlaybackUnsupported()
@@ -617,7 +614,9 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-
+    /**
+     * Checks for necessary permissions.
+     */
     private fun checkPermissions() {
         val permissionsToRequest = mutableListOf<String>()
         if (permissionsToRequest.isNotEmpty()) {
@@ -631,6 +630,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Fonction pour gérer la réponse de l'utilisateur à la demande d'autorisations
+    /**
+     * Handles the result of the request for permissions.
+     */
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
@@ -656,14 +658,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
+    /**
+     * Initializes the application.
+     */
     private fun initializeApp() {
-        // These sound files by convention are:
-        // - take a ~10 second clip
-        // - Apply a 2 second fade-in and fade-out
-        // - Cut the first 3 seconds, and place it over the last three seconds
-        //   which should create a seamless track appropriate for looping
-        // - Save as a mp3 file, 128kbps, stereo
+
         _soundMap =
             ImmutableMap.builder<Int, Int>().put(R.mipmap.campfire_foreground, R.raw.campfire)
                 .put(R.mipmap.dryer_foreground, R.raw.dryer)
@@ -698,23 +697,27 @@ class MainActivity : AppCompatActivity() {
     private fun reportPlaybackUnsupported() {
         Toast.makeText(this, R.string.playbackNotSupported, Toast.LENGTH_LONG).show()
     }
-
+    /**
+     * Starts the playback of the selected sound.
+     */
     private fun startPlayback() {
+        // Retrieve the selected position and corresponding sound item
         val selectedPosition = donnesVM?.selectedImageposition
         val selectedSoundItem = soundItems[selectedPosition!!]
 
-
+        // Retrieve the resource ID and ID of the selected sound
         val selectedSound = selectedSoundItem.imageResId
         val id = _soundMap!![selectedSound]!!
         // Check if it's a valid selection
         if (selectedPosition != null && selectedPosition != -1 && selectedPosition < soundItems.size) {
-
+            // Define the original file and the processed file
             val originalFile = File(getExternalFilesDir(null), "$selectedSound.mp3")
             writeToFile(id, originalFile)
             val processed = File(filesDir, "$selectedSound.raw")
+            // Use different methods based on Android version
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
-                // Use existing code for Android 10 and below
-
+                // Use FFmpeg for Android 10 and below
+                // Prepare arguments for FFmpeg command
                 if (processed.exists()) {
                     val result = processed.delete()
                     if (!result) {
@@ -769,6 +772,7 @@ class MainActivity : AppCompatActivity() {
                 })
 
             }
+            // For Android 11 and above, start AudioService directly
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
 
                 val startIntent = Intent(this@MainActivity, AudioService::class.java)
@@ -789,6 +793,9 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    /**
+     * Starts the playback of the added sound at the given position.
+     */
     private fun startAddedPlayback(position: Int) {
         val startIntent = Intent(this@MainActivity, AudioService::class.java)
         startIntent.putExtra(
@@ -841,23 +848,24 @@ class MainActivity : AppCompatActivity() {
      * Update the timeout for playback to stop
      */
     private fun updatePlayTimeout() {
-        // Cancel the running timer
-        // Start the countdown timer
-
+        // Cancel the running timer and start a new countdown timer
         val sleepTimeoutSpinner = findViewById<Spinner>(R.id.sleepTimerSpinner)
         val selectedTimeout = sleepTimeoutSpinner.selectedItem as String
         val timeoutMs = _timeMap!![selectedTimeout]!!
         if (timeoutMs > 0 && !donnesVM.frequenceChanged) {
+            // Notify TimerService about timer change
             val serviceTimerChanged = Intent(this@MainActivity, TimerService::class.java)
             serviceTimerChanged.putExtra("timerchanged", true)
             startService(serviceTimerChanged)
-
+            // Start TimerService with new countdown duration
             val serviceIntent = Intent(this@MainActivity, TimerService::class.java)
             serviceIntent.putExtra("countdownDuration", timeoutMs)
             startService(serviceIntent)
         } else if (donnesVM.frequenceChanged) {
+            // Reset flag if frequency change occurred
             donnesVM.frequenceChanged = false
         } else {
+            // Notify TimerService to disable the timer
             val serviceTimerChanged = Intent(this@MainActivity, TimerService::class.java)
             serviceTimerChanged.putExtra("timerchanged", true)
             serviceTimerChanged.putExtra("timerDisabled", true)
@@ -869,11 +877,14 @@ class MainActivity : AppCompatActivity() {
      * Update the UI to reflect it is playing
      */
     private fun updateToPlaying() {
+        // Update ViewModel and UI elements
         donnesVM.isPlaying = true
         runOnUiThread {
             if (!donnesVM.frequenceChanged) {
+                // Update timeout if frequency hasn't changed
                 updatePlayTimeout()
             } else {
+                // Reset flag if frequency change occurred
                 donnesVM.frequenceChanged = false
             }
             val button = findViewById<Button>(R.id.button)
@@ -886,14 +897,19 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
+    /**
+     * Stops the playback of the sound.
+     */
     private fun stopPlayback() {
         if (!donnesVM.frequenceChanged) {
+            // Stop TimerService if frequency hasn't changed
             val serviceTimerStop = Intent(this@MainActivity, TimerService::class.java)
             startService(serviceTimerStop)
         }
+        // Stop AudioService
         val stopIntent = Intent(this@MainActivity, AudioService::class.java)
         startService(stopIntent)
+        // Update ViewModel and UI elements
         donnesVM.isPlaying = false
 
         runOnUiThread {
@@ -909,7 +925,9 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-
+    /**
+     * Enables or disables the controls based on the given parameter.
+     */
     private fun setControlsEnabled(enabled: Boolean) {
         for (resId in intArrayOf(R.id.gridView)) {
             val view = findViewById<View>(resId)
@@ -917,6 +935,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Called when the activity is being destroyed.
+     */
     override fun onDestroy() {
         donnesVM.itemSelected = false
         if (!isChangingConfigurations) {
@@ -939,7 +960,9 @@ class MainActivity : AppCompatActivity() {
         mediaPlayer?.release()
         super.onDestroy()
     }
-
+    /**
+     * Initializes the options menu.
+     */
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
         val theme = Preferences[this]?.theme
@@ -964,7 +987,9 @@ class MainActivity : AppCompatActivity() {
         }
         return super.onCreateOptionsMenu(menu)
     }
-
+    /**
+     * Handles the selection of an item in the options menu.
+     */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
         if (id == R.id.action_settings) {
@@ -985,7 +1010,9 @@ class MainActivity : AppCompatActivity() {
         }
         return super.onOptionsItemSelected(item)
     }
-
+    /**
+     * Shows a dialog explaining how to delete a sound.
+     */
     private fun showHowToDeleteSoundDialog() {
         val dialogTitle = getString(R.string.howToDelete)
         val dialogContent = getString(R.string.how_to_delete_sound_content)
@@ -998,7 +1025,9 @@ class MainActivity : AppCompatActivity() {
             }
             .show()
     }
-
+    /**
+     * Scans the sound folder and updates the UI accordingly.
+     */
     private fun scanSoundFolder() {
         val soundDirectory =
             File("/storage/emulated/0/Android/data/protect.babysleepsounds/files/Music/SelectedSounds")
@@ -1037,7 +1066,9 @@ class MainActivity : AppCompatActivity() {
         addedAdapter.notifyDataSetChanged()
     }
 
-
+    /**
+     * Initializes the GIF based on the given parameters.
+     */
     private fun initialiserGif(isSwitch1On: Boolean, playingMusicImg: ImageView) {
         if (donnesVM.choosedGrid == 1) {
             var choosenGif: Int? = null
@@ -1076,7 +1107,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
+    /**
+     * Displays the about dialog.
+     */
     private fun displayAboutDialog() {
         val USED_LIBRARIES: Map<String, String> = ImmutableMap.of(
             "FFmpeg",
