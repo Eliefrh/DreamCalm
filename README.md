@@ -10,6 +10,8 @@
   <p align="center">
     Sweet dreams for your little one, customized just for them!
   </p>
+  <a href="https://f-droid.org/packages/protect.babysleepsounds/" target="_blank">
+<img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="90"/></a>
 </div>
 
 
@@ -57,11 +59,11 @@ Dream Calm is an application designed to create a soothing environment for babie
 ![image](https://github.com/Eliefrh/DreamCalm/assets/78127649/5ad180a5-88e8-4378-b65b-95b7ac44f4e6)
 * Loop Playback: All sounds play in a loop until manually stopped by the user.
 * Frequency Adjustment: Change the frequency of sounds to suit your preferences.<br>
-* Multilingual Support: The app is available in both French and English for a wider audience.
 ![image](https://github.com/Eliefrh/DreamCalm/assets/78127649/2fa447c0-fc05-4258-8f16-99308153172c)
+* Multilingual Support: The app is available in both French and English for a wider audience.
 * Portrait and Landscape Support: The app supports both portrait and landscape orientations.
 * Timer Functionality: Set a timer for sound playback to automatically stop after a specified duration.
-* Dark and Light Mode: Switch between dark and light mode for comfortable viewing in any lighting condition.
+* Dark and Light Mode: Switch between dark and light mode for comfortable viewing in any lighting condition.<br>
 ![image](https://github.com/Eliefrh/DreamCalm/assets/78127649/e44316bf-fa8f-4e40-b31b-cc6574c8cc93)
 * Animated GIF Icons: Enjoy animated icons for a visually engaging experience.
 * Bluetooth Control: Control sound playback using Bluetooth devices for added convenience.
@@ -90,29 +92,34 @@ To get a local copy up and running follow these simple example steps.
 
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
+Before proceeding, ensure you have the following prerequisites installed:
+
+* [Kotlin](https://kotlinlang.org/)
+* [Gradle](https://gradle.org/)
+* [Android Studio](https://developer.android.com/studio?gad_source=1&gclid=CjwKCAjwouexBhAuEiwAtW_Zx4rcwAaf8bnnLfGrwS3j49WSuDIwCBfkXb4W3YiNxSyPw86H3IouxhoCe-IQAvD_BwE&gclsrc=aw.ds) (optional, but recommended for Android development)
 
 ### Installation
 
-_Below is an example of how you can instruct your audience on installing and setting up your app. This template doesn't rely on any external dependencies or services._
+Follow these steps to install and set up your Kotlin project:
 
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
-   ```sh
-   git clone https://github.com/your_username_/Project-Name.git
-   ```
-3. Install NPM packages
-   ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
-   ```
+1. Clone the repository
+ ```sh
+git clone https://github.com/Eliefrh/DreamCalm.git
+  ```
+2. Open the project in your preferred IDE or text editor.
+3. Build the project using Gradle.
+```sh
+gradle build
+ ```
+4. If required, configure any project-specific settings in the build.gradle or other configuration files.
+5. Run the project on an Android device.
+```sh
+gradle run
+ ```
+
+### Documentation
+To generate HTML documentation using Gradle Dokka, execute the (`gradle dokkahtml`)
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -137,36 +144,35 @@ Don't forget to give the project a star! Thanks again!
 <!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+Distributed under the GPLv3 License. See `LICENSE.txt` for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- CONTACT -->
-## Contact
-
-Your Name - [@your_twitter](https://twitter.com/your_username) - email@example.com
-
-Project Link: [https://github.com/your_username/repo_name](https://github.com/your_username/repo_name)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
-Use this space to list resources you find helpful and would like to give credit to. I've included a few of my favorites to kick things off!
+Dream Calm is developed by [Narges](https://github.com/NarguSabz) and [Elie](https://github.com/Eliefrh), inspired by the [Baby sleep sounds](https://github.com/brarcher/baby-sleep-sounds) app by [Branden Archer](https://github.com/brarcher).
 
-* [Choose an Open Source License](https://choosealicense.com)
-* [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
-* [Malven's Flexbox Cheatsheet](https://flexbox.malven.co/)
-* [Malven's Grid Cheatsheet](https://grid.malven.co/)
-* [Img Shields](https://shields.io)
-* [GitHub Pages](https://pages.github.com)
-* [Font Awesome](https://fontawesome.com)
-* [React Icons](https://react-icons.github.io/react-icons/search)
+The following sound resources were created by [Canton Becker](http://whitenoise.cantonbecker.com)
+and are distributed under the CC BY-NC-SA 3.0 License:
+ - noise_only.mp3
+
+The following sound resources were created by [MC2Method.org](http://mc2method.org/white-noise/)
+and are distributed under the condition of "Personal Use":
+  - dryer.mp3
+  - fan.mp3
+  - ocean.mp3
+  - rain.mp3
+  - refrigerator.mp3
+  - shower.mp3
+  - stream.mp3
+  - vacuum.mp3
+  - water.mp3
+  - waterfall.mp3
+  - waves.mp3
+
+[Campfire-1.mp3](https://www.soundjay.com/nature/campfire-1.mp3) Copyright SoundJay.com Used with Permission.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -197,16 +203,4 @@ Use this space to list resources you find helpful and would like to give credit 
 [Gradle-url]: https://ffmpeg.org/](https://gradle.org/
 [Gradle.com]:https://img.shields.io/badge/Gradle%20-%20white?logo=gradle&logoColor=green&labelColor=white&color=gray&link=https%3A%2F%2Fgradle.org%2F
 
-
-#Installation
-Dream Calm is available for download on F-Droid, a trusted repository for free and open-source Android apps.
-
-Documentation
-To generate and view an HTML documentation for Dream Calm, run the gradle dokkaHtml task.
-
-About
-Dream Calm is developed by Narges and Elie, inspired by the "Baby Sleep Sounds" app by Branden Archer.
-
-License
-Dream Calm is licensed under the GPLv3.
 
