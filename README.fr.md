@@ -9,7 +9,7 @@
   <h3 align="center">Dream Calm</h3>
 
   <p align="center">
-    Des doux rêves pour votre petit, personnalisés juste pour eux!
+    Des nuits paisibles pour votre tout-petit!
   </p>
   <a href="https://f-droid.org/packages/protect.babysleepsounds/" target="_blank">
     <img src="https://f-droid.org/badge/get-it-on.png" alt="Obtenez-le sur F-Droid" height="90"/>
