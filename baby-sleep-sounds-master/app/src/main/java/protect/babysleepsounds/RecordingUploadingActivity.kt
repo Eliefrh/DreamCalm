@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.os.SystemClock
+import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.Chronometer
@@ -40,7 +41,6 @@ class RecordingUploadingActivity : AppCompatActivity() {
     private var mediaRecorder: MediaRecorder? = null
     private var outputFile: File? = null
     private lateinit var isRecordingText: TextView
-    private lateinit var timerText: TextView
     private lateinit var chronometer: Chronometer
     private lateinit var buttonRecording: ImageButton
     private lateinit var buttonPlaySound: Button
@@ -110,6 +110,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
         }
         // Set listeners for buttons
         buttonRecording.setOnClickListener {
+            Log.d("jesaipas",donnesVM.isplayingRecording.toString())
 
             if (!isRecording) {
                 if(!donnesVM.isplayingRecording){
@@ -153,6 +154,8 @@ class RecordingUploadingActivity : AppCompatActivity() {
                             release()
                             mediaPlayer = null
                             playText.text = getString(R.string.playSound)
+                            donnesVM.isplayingRecording = false
+
                         }
                     }
                 } ?: outputFile?.let { file ->
@@ -164,6 +167,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
                             release()
                             mediaPlayer = null
                             playText.text =  getString(R.string.playSound)
+                            donnesVM.isplayingRecording = false
                         }
                     }
                 }
@@ -352,6 +356,7 @@ class RecordingUploadingActivity : AppCompatActivity() {
      */
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
+        donnesVM.isplayingRecording = false
         if (isRecording) {
             stopRecording()
         }
