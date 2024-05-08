@@ -48,7 +48,7 @@
 
 
 
-Dream Calm is an application designed to create a soothing environment for babies by providing a selection of sounds, including white noise and nature sounds. Additionally, users have the ability to add their own sounds to the app, which will play in a loop until manually stopped.
+Dream Calm is an application designed to create a soothing environment for babies by providing a selection of sounds, including white noise and nature sounds. Additionally, users have the ability to add their own sounds to the app, which will play in a loop.
 
 ### Features
 * Sound Selection: Choose from a variety of sounds, including white noise and nature sounds.
