@@ -1,17 +1,31 @@
 Categories:
   - Health
-Builds:
-  - versionName: '1.0.0'
 License: GPL-3.0-or-later
-Summary: Dream Calm - A soothing app for babies
-Description: |
-  Dream Calm is a gentle companion for babies, offering a curated selection of calming sounds and images to aid in peaceful sleep. Inspired by Branden Archer's "Baby Sleep Sounds," our app aims to create a soothing environment conducive to relaxation and tranquility for your little one.
+SourceCode: https://github.com/Eliefrh/DreamCalm.git
 
-  Features:
-  - Select from a variety of calming sounds.
-  - Set a sleep timer to automatically stop playback.
-  - Record and save your own sounds.
-  - Choose from different themes (Light/Dark).
+AutoName: Dream Calm
+Summary: Dream Calm - A soothing app for babies
+Description: |-
+    Dream Calm is a gentle companion for babies, offering a curated selection of calming sounds and images to aid in peaceful sleep. Inspired by Branden Archer's "Baby Sleep Sounds," our app aims to create a soothing environment conducive to relaxation and tranquility for your little one.
+
+    Features:
+    - Select from a variety of calming sounds.
+    - Set a sleep timer to automatically stop playback.
+    - Record and save your own sounds.
+    - Choose from different themes (Light/Dark).
+
 RepoType: git
 Repo: https://github.com/Eliefrh/DreamCalm.git
 
+Builds:
+  - versionName: '1.0.0'
+    versionCode: 1  
+    commit: 11fc6beb9239b0a6cec6c5ad33a94a285864e34f  
+    subdir: app  
+    gradle:
+      - yes
+
+AutoUpdateMode: Version v%v
+UpdateCheckMode: Tags
+CurrentVersion: '1.0.0'
+CurrentVersionCode: 1  
