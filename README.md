@@ -45,7 +45,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-![image](https://github.com/Eliefrh/DreamCalm/assets/78127649/6becfa05-fb41-4719-a002-b431887b5a2d)
+![image](https://github.com/Eliefrh/DreamCalm/assets/78127649/8b16133d-eb0f-4d40-9530-0ef896fe7dfa)
 
 
 
@@ -54,16 +54,26 @@ Dream Calm is an application designed to create a soothing environment for babie
 ### Features
 * Sound Selection: Choose from a variety of sounds, including white noise and nature sounds.
 * Custom Sound Addition: Users can add their own audio files to the app for playback.<br>
-![image](https://github.com/Eliefrh/DreamCalm/assets/78127649/5ad180a5-88e8-4378-b65b-95b7ac44f4e6)
+![image](https://github.com/Eliefrh/DreamCalm/assets/78127649/f899472b-f631-4c1d-9e50-f25eb27157c8)
+
 * Loop Playback: All sounds play in a loop until manually stopped by the user.
 * Frequency Adjustment: Change the frequency of sounds to suit your preferences.<br>
-![image](https://github.com/Eliefrh/DreamCalm/assets/78127649/2fa447c0-fc05-4258-8f16-99308153172c)
-* Multilingual Support: The app is available in both French and English for a wider audience.
-* Portrait and Landscape Support: The app supports both portrait and landscape orientations.
-* Timer Functionality: Set a timer for sound playback to automatically stop after a specified duration.
+![image](https://github.com/Eliefrh/DreamCalm/assets/78127649/0aaabe49-1e36-46b6-9b9e-3f4aedd58c27)
+
+* Multilingual Support: The app is available in both French and English for a wider audience.<br>
+
+* Portrait and Landscape Support: The app supports both portrait and landscape orientations.<br>
+<img src="https://github.com/Eliefrh/DreamCalm/assets/78127649/7e1db431-9c8c-4855-95d2-874ff9e48f6e" width="300">
+<img src="https://github.com/Eliefrh/DreamCalm/assets/78127649/9822f3b3-d882-48a4-b433-6298d83a5945" height="300">
+* Timer Functionality: Set a timer for sound playback to automatically stop after a specified duration.<br>
+![baby-sleep-sounds-masterRecordingUploadingActivity ktbaby-sleep-sounds-master app main2024-05-0911-31-56-ezgif com-video-to-gif-converter](https://github.com/Eliefrh/DreamCalm/assets/78127649/901abf74-d200-4fdd-9cc0-02a79346c143)
+
 * Dark and Light Mode: Switch between dark and light mode for comfortable viewing in any lighting condition.<br>
-![image](https://github.com/Eliefrh/DreamCalm/assets/78127649/e44316bf-fa8f-4e40-b31b-cc6574c8cc93)
-* Animated GIF Icons: Enjoy animated icons for a visually engaging experience.
+<img src="https://github.com/Eliefrh/DreamCalm/assets/78127649/c48bdb7a-de66-43cb-b30c-4efd1ac2e6d7" width="300">
+<img src="https://github.com/Eliefrh/DreamCalm/assets/78127649/d71b4895-42c8-486a-a1b9-5203daac30ee" width="300"><br>
+
+* Animated GIF Icons: Enjoy animated icons for a visually engaging experience.<br>
+<img src="https://github.com/Eliefrh/DreamCalm/assets/78127649/4f39dc56-1c1f-440e-b100-f6becbe8ba00" width="300"><br>
 * Bluetooth Control: Control sound playback using Bluetooth devices for added convenience.
 
 
