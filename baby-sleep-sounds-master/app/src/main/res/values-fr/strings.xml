@@ -63,7 +63,7 @@
     <string name="app_libraries"><xliff:g id="app_name">%s</xliff:g> utilise les bibliothèques ou programmes tiers suivants: <xliff:g id="app_libraries_list">%s</xliff:g></string>
     <string name="recentlyadded">Sons ajoutés:</string>
     <string name="descriptionRecording">Recorder un son</string>
-    <string name="descriptionUploading">Uploader un son</string>
+    <string name="descriptionUploading">Importer un son</string>
     <string name="saveFile">Sauvegarder</string>
     <string name="playSound">Jouer</string>
     <string name="isRecordingText">Enregistrement en cours…</string>
