@@ -38,24 +38,35 @@
 <!-- À PROPOS DU PROJET -->
 ## À propos du projet
 
-![image](https://github.com/Eliefrh/DreamCalm/assets/78127649/6becfa05-fb41-4719-a002-b431887b5a2d)
+![image](https://github.com/Eliefrh/DreamCalm/assets/78127649/c1a0d9f7-1e30-4908-b620-c37f327da1c5)
+
 
 Dream Calm est une application conçue pour créer un environnement apaisant pour les bébés en proposant une sélection de sons, y compris du bruit blanc et des sons de la nature. De plus, les utilisateurs ont la possibilité d'ajouter leurs propres sons à l'application, qui seront lus en boucle.
 
+
 ### Fonctionnalités
 * Sélection de sons : Choisissez parmi une variété de sons, y compris du bruit blanc et des sons de la nature.
-* Ajout de son personnalisé : Les utilisateurs peuvent ajouter leurs propres fichiers audio à l'application pour la lecture.<br>
-![image](https://github.com/Eliefrh/DreamCalm/assets/78127649/5ad180a5-88e8-4378-b65b-95b7ac44f4e6)
-* Lecture en boucle : Tous les sons sont lus en boucle jusqu'à ce que l'utilisateur les arrête manuellement.
-* Ajustement de la fréquence : Changez la fréquence des sons selon vos préférences.<br>
-![image](https://github.com/Eliefrh/DreamCalm/assets/78127649/2fa447c0-fc05-4258-8f16-99308153172c)
-* Support multilingue : L'application est disponible en français et en anglais pour un public plus large.
-* Support en mode portrait et paysage : L'application prend en charge les orientations portrait et paysage.
-* Fonctionnalité de minuterie : Définissez une minuterie pour l'arrêt automatique de la lecture des sons après une durée spécifiée.
+* Icônes GIF animées : Profitez d'icônes animées pour une expérience visuelle attrayante.<br>
+<img src="https://github.com/Eliefrh/DreamCalm/assets/78127649/2cb56265-64fb-427a-8ca5-8ecbfc1c7e63" width="300"><br>
+
+* Support en mode portrait et paysage : L'application prend en charge les orientations portrait et paysage.<br>
+<img src="https://github.com/Eliefrh/DreamCalm/assets/78127649/2714bddb-8ac8-4fa0-8640-016e1221933e" width="300">
+<img src="https://github.com/Eliefrh/DreamCalm/assets/78127649/2ad750c2-68a1-4238-90ef-b425e670a235" height="300"><br>
+
 * Mode sombre et mode clair : Basculez entre le mode sombre et le mode clair pour une visualisation confortable dans toutes les conditions d'éclairage.<br>
-![image](https://github.com/Eliefrh/DreamCalm/assets/78127649/e44316bf-fa8f-4e40-b31b-cc6574c8cc93)
-* Icônes GIF animées : Profitez d'icônes animées pour une expérience visuelle attrayante.
+<img src="https://github.com/Eliefrh/DreamCalm/assets/78127649/41c3f0f6-5249-487a-aed8-3d53593d880a" width="300">
+<img src="https://github.com/Eliefrh/DreamCalm/assets/78127649/66bf7ab9-ff07-46de-8ea5-868b6ba19f4f" width="300"><br>
+
+* Support multilingue : L'application est disponible en français et en anglais pour un public plus large.
+* Ajout de son personnalisé : Les utilisateurs peuvent ajouter leurs propres fichiers audio à l'application pour la lecture.<br>
+<img src="https://github.com/Eliefrh/DreamCalm/assets/78127649/91a30c82-fd08-4b2c-b04f-5b03fa825829" width="300"><br>
+
+* Fonctionnalité de minuterie : Définissez une minuterie pour l'arrêt automatique de la lecture des sons après une durée spécifiée.<br>
+<img src="https://github.com/Eliefrh/DreamCalm/assets/78127649/6883f245-903f-44d4-9945-ff3c25159626" width="300"><br>
+
 * Contrôle Bluetooth : Contrôlez la lecture des sons à l'aide de périphériques Bluetooth pour plus de commodité.
+* Ajustement de la fréquence : Changez la fréquence des sons selon vos préférences.<br>
+<img src="https://github.com/Eliefrh/DreamCalm/assets/78127649/3f9620ef-6978-4cc1-9223-8cc57fb0c634" width="300"><br>
 
 
 <p align="right">(<a href="#readme-top">retour en haut</a>)</p>
