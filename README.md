@@ -11,8 +11,7 @@
   <p align="center">
     Sweet dreams for your little one!
   </p>
-  <a href="https://f-droid.org/packages/protect.babysleepsounds/" target="_blank">
-<img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="90"/></a>
+
 </div>
 
 
