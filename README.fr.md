@@ -11,8 +11,6 @@
   <p align="center">
     Des nuits paisibles pour votre tout-petit!
   </p>
-  <a href="https://f-droid.org/packages/protect.babysleepsounds/" target="_blank">
-    <img src="https://f-droid.org/badge/get-it-on.png" alt="Obtenez-le sur F-Droid" height="90"/>
   </a>
 </div>
 
